@@ -4,8 +4,8 @@
   "previous_version": "1.0.1",
   "description": "Koha Self Service Permission API",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-cli": "^1.2.2",
+    "gulp": "^4.0.0",
+    "gulp-cli": "^2.0.1",
     "gulp-github-release": "^1.1.5",
     "gulp-run": "^1.7.1"
   },

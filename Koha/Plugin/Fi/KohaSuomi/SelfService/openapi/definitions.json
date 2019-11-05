@@ -1,0 +1,14 @@
+{
+  "borrowerStatus": {
+    "$ref": "definitions/borrowerstatus.json"
+  },
+  "borrowerSelfServiceStatus": {
+    "$ref": "definitions/borrowerSelfServiceStatus.json"
+  },
+  "borrowerSelfServiceBlock": {
+    "$ref": "definitions/borrowerSelfServiceBlock.json"
+  },
+  "error": {
+    "$ref": "definitions/error.json"
+  }
+}

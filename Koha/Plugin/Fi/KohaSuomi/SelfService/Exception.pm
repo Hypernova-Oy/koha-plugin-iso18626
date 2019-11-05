@@ -19,9 +19,11 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
 use Modern::Perl;
 
+use Koha::Exceptions;
+
 use Exception::Class (
     'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception' => {
-        isa => 'Koha::Exception',
+        isa => 'Koha::Exceptions::Exception',
         description => "A generic Self-Service exception type",
     },
 );

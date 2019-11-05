@@ -1,4 +1,4 @@
-package Koha::Plugin::Fi::SelfService::StatusApi;
+package Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi;
 
 # This file is part of Koha.
 #
@@ -29,8 +29,8 @@ use Scalar::Util qw( blessed );
 use Try::Tiny;
 use Data::Printer;
 
-use Koha::Plugin::Fi::SelfService;
-use Koha::Plugin::Fi::SelfService::BlockManager;
+use Koha::Plugin::Fi::KohaSuomi::SelfService;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 
 # NOTE
 #
@@ -50,7 +50,7 @@ sub ss_block_delete {
 
         #If we didn't get any exceptions, we succeeded
         $payload = {};
-        $payload->{deleted_count} = Koha::Plugin::Fi::SelfService::BlockManager::deleteBlock($borrower_ss_block_id);
+        $payload->{deleted_count} = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::deleteBlock($borrower_ss_block_id);
         $payload->{deleted_count} = 0 if $payload->{deleted_count} == 0E0;
 
         return $c->render(status => 200, openapi => $payload);
@@ -71,7 +71,7 @@ sub ss_blocks_delete {
 
         #If we didn't get any exceptions, we succeeded
         $payload = {};
-        $payload->{deleted_count} = Koha::Plugin::Fi::SelfService::BlockManager::deleteBorrowersBlocks($borrowernumber);
+        $payload->{deleted_count} = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::deleteBorrowersBlocks($borrowernumber);
         $payload->{deleted_count} = 0 if $payload->{deleted_count} == 0E0;
 
         return $c->render(status => 200, openapi => $payload);
@@ -92,7 +92,7 @@ sub ss_block_get {
         my $borrower_ss_block_id = $c->validation->param('borrower_ss_block_id');
 
         #If we didn't get any exceptions, we succeeded
-        my $block = Koha::Plugin::Fi::SelfService::BlockManager::getBlock($borrower_ss_block_id);
+        my $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::getBlock($borrower_ss_block_id);
         return $c->render(status => 200, openapi => $block->swaggerize()) if $block;
         return $c->render(status => 404, openapi => {error => "No such self-service block"}) unless $block;
 
@@ -112,7 +112,7 @@ sub ss_block_has {
         my $branchcode = $c->validation->param('branchcode');
 
         #If we didn't get any exceptions, we succeeded
-        my $block = Koha::Plugin::Fi::SelfService::BlockManager::hasBlock($borrowernumber, $branchcode);
+        my $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::hasBlock($borrowernumber, $branchcode);
         return $c->render(status => 200, openapi => $block->swaggerize()) if $block;
         return $c->render(status => 204, openapi => {}) unless $block;
 
@@ -130,7 +130,7 @@ sub ss_blocks_list {
         my $borrowernumber = $c->validation->param('borrowernumber');
 
         #If we didn't get any exceptions, we succeeded
-        my $blocks = Koha::Plugin::Fi::SelfService::BlockManager::listBlocks($borrowernumber, DateTime->now(time_zone => C4::Context->tz()));
+        my $blocks = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::listBlocks($borrowernumber, DateTime->now(time_zone => C4::Context->tz()));
         if ($blocks && @$blocks) {
             @$blocks = map {$_->swaggerize()} @$blocks;
             return $c->render(status => 200, openapi => $blocks);
@@ -153,8 +153,8 @@ sub ss_blocks_post {
         $block->{borrowernumber} = $borrowernumber if $borrowernumber;
 
         #If we didn't get any exceptions, we succeeded
-        $block = Koha::Plugin::Fi::SelfService::BlockManager::createBlock($block);
-        Koha::Plugin::Fi::SelfService::BlockManager::storeBlock($block);
+        $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::createBlock($block);
+        Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::storeBlock($block);
         return $c->render(status => 200, openapi => $block->swaggerize());
 
     } catch {
@@ -178,7 +178,7 @@ sub ss_blocks_put {
         $block->{borrower_ss_block_id} = $borrower_ss_block_id if $borrower_ss_block_id;
 
         #If we didn't get any exceptions, we succeeded
-        $block = Koha::Plugin::Fi::SelfService::BlockManager::storeBlock($block);
+        $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::storeBlock($block);
         return $c->render(status => 200, openapi => $block);
 
     } catch {
@@ -262,7 +262,7 @@ sub get_self_service_status {
     try {
         my $patron = Koha::Patrons->cast($c->validation->param('cardnumber'));
         my $branchcode = $c->validation->param('branchcode');
-        Koha::Plugin::Fi::SelfService::CheckSelfServicePermission($patron, $branchcode, 'accessMainDoor');
+        Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($patron, $branchcode, 'accessMainDoor');
         #If we didn't get any exceptions, we succeeded
         $payload = {permission => Mojo::JSON->true};
         return $c->render(status => 200, openapi => $payload);
@@ -274,7 +274,7 @@ sub get_self_service_status {
         elsif ($_->isa('Koha::Exception::UnknownObject')) {
             return $c->render( status => 404, openapi => { error => "No such cardnumber" } );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::SelfService::Exception::OpeningHours')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours')) {
             $payload = {
                 permission => Mojo::JSON->false,
                 error => ref($_),
@@ -283,7 +283,7 @@ sub get_self_service_status {
             };
             return $c->render( status => 200, openapi => $payload );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::SelfService::Exception::PermissionRevoked')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked')) {
             $payload = {
                 permission     => Mojo::JSON->false,
                 error          => ref($_),
@@ -291,14 +291,14 @@ sub get_self_service_status {
             $payload->{expirationdate} = $_->{expirationdate} if $_->{expirationdate};
             return $c->render( status => 200, openapi => $payload );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::SelfService::Exception')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception')) {
             $payload = {
                 permission => Mojo::JSON->false,
                 error => ref($_),
             };
             return $c->render( status => 200, openapi => $payload );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::SelfService::Exception::FeatureUnavailable')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
             return $c->render( status => 501, openapi => { error => "$_" } );
         }
         else {

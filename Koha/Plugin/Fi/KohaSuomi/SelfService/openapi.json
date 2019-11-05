@@ -1,7 +1,7 @@
 {
   "/borrowers/{borrowernumber}/ssblocks": {
     "delete": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_blocks_delete",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_delete",
       "operationId": "borrower_ss_blocks_delete",
       "tags": ["borrowers", "self_service"],
       "summary": "Deletes the Borrower's branch-specific self-service blocks for all branches",
@@ -36,7 +36,7 @@
       }
     },
     "get": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_blocks_list",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_list",
       "operationId": "borrower_ss_blocks_list",
       "tags": ["borrowers", "self_service"],
       "summary": "Returns the Borrower's branch-specific self-service blocks",
@@ -76,7 +76,7 @@
       }
     },
     "post": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_blocks_post",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_post",
       "operationId": "borrower_ss_blocks_post",
       "tags": ["borrowers", "self_service"],
       "summary": "Creates a branch-specific self-service block for the given borrower",
@@ -115,7 +115,7 @@
   },
   "/borrowers/{borrowernumber}/ssblocks/{borrower_ss_block_id}": {
     "delete": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_block_delete",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_block_delete",
       "operationId": "borrower_ss_block_delete",
       "tags": ["borrowers", "self_service"],
       "summary": "Deletes the Borrower's branch-specific self-service blocks for all branches",
@@ -153,7 +153,7 @@
       }
     },
     "get": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_block_get",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_block_get",
       "operationId": "borrower_ss_block_get",
       "tags": ["borrowers", "self_service"],
       "summary": "Returns the Borrower's single branch-specific self-service block",
@@ -193,7 +193,7 @@
   },
   "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}": {
     "get": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#ss_block_has",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#ss_block_has",
       "operationId": "borrower_ss_block_has",
       "tags": ["borrowers", "self_service"],
       "summary": "Checks if the given borrower has a block to the given branch",
@@ -230,7 +230,7 @@
   },
   "/borrowers/status": {
     "get": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#status",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#status",
       "operationId": "status",
       "tags": ["borrowers"],
       "summary": "Returns the Borrower's details and statuses",
@@ -274,7 +274,7 @@
   },
   "/borrowers/ssstatus": {
     "get": {
-      "x-mojo-to": "Koha::Plugin::Fi::SelfService::StatusApi#get_self_service_status",
+      "x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::SelfService::StatusApi#get_self_service_status",
       "x-koha-authorization": {
         "permissions": {
           "borrowers": "get_self_service_status"

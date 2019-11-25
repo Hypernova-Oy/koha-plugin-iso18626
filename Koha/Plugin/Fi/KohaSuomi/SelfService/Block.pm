@@ -23,6 +23,10 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
 
+use Koha::Exceptions::Library;
+use Koha::Exceptions::Patron;
+use Koha::Exceptions::Plugin;
+
 use Koha::Logger;
 my $logger = bless({lazyLoad => {category => __PACKAGE__}}, 'Koha::Logger');
 
@@ -30,7 +34,7 @@ use fields qw(borrower_ss_block_id borrowernumber branchcode expirationdate crea
 
 =head1 NAME
 
-C4::SelfService::Block - Branch-specific self-service library access block for a borrower
+Koha::Plugin::Fi::KohaSuomi::SelfService::Block - Branch-specific self-service library access block for a borrower
 
 =head1 DESCRIPTION
 
@@ -138,7 +142,7 @@ Static subroutines to help testing these objects
 =head2 get_deeply_testable
 
  @param1 {HASHRef} Block-object's attributes to overload defaults with
- @returns {C4::SelfService::Block} a Test::Deep::cmp_deeply -testable instance of a typical object
+ @returns {Koha::Plugin::Fi::KohaSuomi::SelfService::Block} a Test::Deep::cmp_deeply -testable instance of a typical object
 
 =cut
 
@@ -153,7 +157,7 @@ sub get_deeply_testable {
         notes                => $got->{notes},
         created_by           => $got->{created_by}           // Test::Deep::Regexp->new(qr/^\d+$/),
         created_on           => $got->{created_on}           // Test::Deep::Regexp->new(qr/^\d\d\d\d-\d\d-\d\d[ T]\d\d:\d\d:\d\d/),
-    }, 'C4::SelfService::Block');
+    }, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block');
 };
 
 1;

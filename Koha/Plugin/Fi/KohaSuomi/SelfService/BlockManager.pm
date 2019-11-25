@@ -78,7 +78,7 @@ sub createBlock {
 
 =head2 deleteBlock
 
- @param1 {C4::SelfService::Block || Integer} Do not use Integer if possible.
+ @param1 {Koha::Plugin::Fi::KohaSuomi::SelfService::Block || Integer} Do not use Integer if possible.
  @returns {Integer} The number of rows affected. See DBI::execute
  @throws Koha::Exceptions::Exception
 
@@ -128,7 +128,7 @@ sub deleteBorrowersBlocks {
 =head2 getBlock
 
  @param1 {Integer} borrower_ss_block_id
- @returns {C4::SelfService::Block}
+ @returns {Koha::Plugin::Fi::KohaSuomi::SelfService::Block}
  @throws Koha::Exceptions::Exception
 
 =cut
@@ -145,7 +145,7 @@ sub getBlock {
 
     my ($block) = $dbh->selectall_array($sqlCache{getBlockSth}, { Slice => {} }, $borrower_ss_block_id);
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    bless($block, 'C4::SelfService::Block') if ($block);
+    bless($block, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block') if ($block);
     $logger->debug(sprintf("Got '%s'", ($block) ? $block->toString(): 'undef')) if $logger->is_debug();
     return $block;
 }
@@ -155,7 +155,7 @@ sub getBlock {
  @param1 {Integer or Koha::Patron or HASH}  borrowernumber whose blocks to inspect
  @param2 {String}   OPTIONAL. Branchcode of the library we check the block for. Defaults to C4::Context->userenv->{branch} (the loggedinbranch) if omitted.
  @param3 {DateTime or ISO8601-String} OPTIONAL. The point in time to check for active blocks (not expired at this time). Defaults to NOW().
- @returns {C4::SelfService::Block or undef}
+ @returns {Koha::Plugin::Fi::KohaSuomi::SelfService::Block or undef}
  @throws {Koha::Exceptions::Plugin::ForbiddenAction} When no branchcode is provided as a parameter and there is no logged in user whose loggedinbranch to infer
 
 =cut
@@ -181,7 +181,7 @@ sub hasBlock {
 
     my ($block) = $dbh->selectall_array($sqlCache{hasBlockSth}, { Slice => {} }, $borrowernumber, $branchcode, $expirationStatusDate);
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    $block = bless($block, 'C4::SelfService::Block') if ($block);
+    $block = bless($block, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block') if ($block);
     $logger->debug(sprintf("Checked '%s'", ($block) ? $block->toString(): 'undef')) if $logger->is_debug();
     return $block;
 }
@@ -190,7 +190,7 @@ sub hasBlock {
 
  @param1 {Integer || HASHRef || Koha::Patron} The borrower whose blocks to list
  @param2 {DateTime or ISO8601-String} OPTIONAL. The point in time to check for active blocks (not expired at this time). Defaults to list all blocks regardless of expiration.
- @returns {ARRAYRef of C4::SelfService::Block}
+ @returns {ARRAYRef of Koha::Plugin::Fi::KohaSuomi::SelfService::Block}
  @throws Koha::Exceptions::Exception
 
 =cut
@@ -212,15 +212,15 @@ sub listBlocks {
 
     my @blocks = $dbh->selectall_array($sqlCache{listBlockSth}, { Slice => {} }, $borrowernumber, $expirationStatusDate);
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    @blocks = map {my $b = $_; bless($b, 'C4::SelfService::Block')} @blocks;
+    @blocks = map {my $b = $_; bless($b, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block')} @blocks;
     return \@blocks;
 }
 
 =head2 storeBlock
 
-Persist a C4::SelfService::Block to the DB
+Persist a Koha::Plugin::Fi::KohaSuomi::SelfService::Block to the DB
 
- @param1 {C4::SelfService::Block}
+ @param1 {Koha::Plugin::Fi::KohaSuomi::SelfService::Block}
  @throws Koha::Exceptions::Exception
  @throws Koha::Exceptions::Patron
  @throws Koha::Exceptions::Library::NotFound
@@ -298,7 +298,7 @@ regardless of coming and going branches and librarians.
 
 =head2 _checkForeignKeys
 
- @param1 {C4::SelfService::Block}
+ @param1 {Koha::Plugin::Fi::KohaSuomi::SelfService::Block}
  @throws Koha::Exceptions::Exception
  @throws Koha::Exceptions::Patron
  @throws Koha::Exceptions::Library::NotFound

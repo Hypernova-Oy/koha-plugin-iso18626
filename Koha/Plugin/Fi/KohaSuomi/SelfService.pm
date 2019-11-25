@@ -40,6 +40,8 @@ use Koha::Caches;
 use Koha::Logger;
 use Koha::Patron::Debarments;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
+
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
@@ -78,6 +80,24 @@ sub new {
     return $self;
 }
 
+sub install {
+    my ( $self, $args ) = @_;
+
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::install($self, $args);
+}
+
+sub uninstall {
+    my ( $self, $args ) = @_;
+
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::uninstall($self, $args);
+}
+
+sub upgrade {
+    my ( $self, $args ) = @_;
+
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::upgrade($self, $args);
+}
+
 sub api_routes {
     my ( $self, $args ) = @_;
 
@@ -113,31 +133,31 @@ sub CheckSelfServicePermission {
         unless (blessed($_) && $_->can('rethrow')) {
             confess $_;
         }
-        if ($_->isa('Koha::Exception::SelfService::Underage')) {
+        if ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'underage');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::SelfService::TACNotAccepted')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'missingT&C');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::SelfService::BlockedBorrowerCategory')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'blockBorCat');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::SelfService::PermissionRevoked')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'revoked');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::SelfService::OpeningHours')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'closed');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::SelfService')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::SelfService')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'denied');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Exception::FeatureUnavailable')) {
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'misconfigured');
             $_->rethrow();
         }
@@ -173,17 +193,17 @@ sub _HasSelfServicePermission {
 
 sub _CheckCardLost {
     my ($patron, $rules) = @_;
-    Koha::Exception::SelfService->throw(error => "Card lost") if ($patron->{lost});
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception->throw(error => "Card lost") if ($patron->{lost});
 }
 
 sub _CheckCardExpired {
     my ($patron, $rules) = @_;
-    Koha::Exception::SelfService->throw(error => "Card expired") if ($patron->{dateexpiry} lt Time::Piece::localtime->strftime('%F'));
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception->throw(error => "Card expired") if ($patron->{dateexpiry} lt Time::Piece::localtime->strftime('%F'));
 }
 
 sub _CheckDebarred {
     my ($patron, $rules) = @_;
-    Koha::Exception::SelfService->throw(error => "Debarred") if ($patron->{debarred});
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception->throw(error => "Debarred") if ($patron->{debarred});
 }
 
 sub _CheckMaxFines {
@@ -194,7 +214,7 @@ sub _CheckMaxFines {
     return unless $totalFines[0];
     my $maxFinesBeforeBlock = C4::Context->preference('noissuescharge');
     if ($totalFines[0] >= $maxFinesBeforeBlock) {
-        Koha::Exception::SelfService->throw(error => "Too many fines '$totalFines[0]'"); #It might be ok to throw something specific about max fines, but then Toveri needs to be retrofitted to handle the new exception type.
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception->throw(error => "Too many fines '$totalFines[0]'"); #It might be ok to throw something specific about max fines, but then Toveri needs to be retrofitted to handle the new exception type.
     }
 }
 
@@ -209,14 +229,14 @@ sub _CheckMinimumAge {
         }
     }
 
-    Koha::Exception::SelfService::Underage->throw(minimumAge => $rules->{MinimumAge});
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage->throw(minimumAge => $rules->{MinimumAge});
 }
 
 sub _CheckTaC {
     my ($patron, $rules) = @_;
     my $agreement = C4::Members::Attributes::GetBorrowerAttributeValue($patron->{borrowernumber}, 'SST&C');
     unless ($agreement) {
-        Koha::Exception::SelfService::TACNotAccepted->throw();
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted->throw();
     }
 }
 
@@ -224,7 +244,7 @@ sub _CheckPermission {
     my ($patron, $rules) = @_;
     my $ban = C4::Members::Attributes::GetBorrowerAttributeValue($patron->{borrowernumber}, 'SSBAN');
     if ($ban) {
-        Koha::Exception::SelfService::PermissionRevoked->throw();
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked->throw();
     }
 }
 
@@ -232,15 +252,15 @@ sub _CheckBorrowerCategory {
     my ($patron, $rules) = @_;
 
     unless ($patron->{categorycode} && $rules->{BorrowerCategories} =~ /$patron->{categorycode}/) {
-        Koha::Exception::SelfService::BlockedBorrowerCategory->throw(error => "Borrower category '".$patron->{categorycode}."' is not allowed");
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory->throw(error => "Borrower category '".$patron->{categorycode}."' is not allowed");
     }
 }
 
 sub _CheckBranchBlock {
     my ($patron, $rules, $requestingBranchcode) = @_;
-    my $block = C4::SelfService::BlockManager::hasBlock($patron, $requestingBranchcode);
+    my $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::hasBlock($patron, $requestingBranchcode);
     if ($block) {
-        Koha::Exception::SelfService::PermissionRevoked->throw(expirationdate => $block->{expirationdate});
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked->throw(expirationdate => $block->{expirationdate});
     }
 }
 
@@ -250,9 +270,9 @@ sub _CheckOpeningHours {
     # If no branchcode to check the opening hours for has been given, let it pass. This is important to allow using the same code from block list generating code, and for realtime checks.
     return 1 unless ($branchcode);
 
-    unless (Koha::Libraries::isOpen($branchcode)) {
-        my $openingHours = Koha::Libraries::getOpeningHours($branchcode);
-        Koha::Exception::SelfService::OpeningHours->throw(
+    unless (isLibraryOpen($branchcode)) {
+        my $openingHours = getOpeningHours($branchcode);
+        Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours->throw(
             error => "Self-service resource closed at this time. Try again later.",
             startTime => $openingHours->[0],
             endTime => $openingHours->[1],
@@ -299,7 +319,7 @@ Retrieves the Self-Service rules. This is basically a list of checks triggered, 
             'Debarred'           => Boolean, check if user account is debarred
             'MaxFines'           => Boolean, checks the syspref 'MaxFine' against the borrowers accumulated fines,
             'OpeningHours'       => Boolean, use the syspref 'OpeningHours' to check against the current time and branch.
-@THROWS Koha::Exception::FeatureUnavailable if SSRules is not properly configured
+@THROWS Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable if SSRules is not properly configured
 =cut
 
 sub GetRules {
@@ -314,7 +334,102 @@ sub GetRules {
         return $rules;
     }
 
-    Koha::Exception::FeatureUnavailable->throw(error => "System preference 'SSRules' '".($ssrules||'undef')."' is not properly defined: $@");
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "System preference 'SSRules' '".($ssrules||'undef')."' is not properly defined: $@");
+}
+
+=head2 isLibraryOpen
+
+  my $open = isLibraryOpen($branchcode || 'CPL' [, $DateTime]);
+
+@PARAM1 String, branchcode
+@PARAM2 DateTime, OPTIONAL time to check for openness. Defaults to current time | now().
+@RETURNS Boolean, Library is open or not
+@THROWS from _getOpeningHoursFromSyspref()
+
+=cut
+
+sub isLibraryOpen {
+    my ($branchcode, $dt) = @_;
+
+    $dt = DateTime->now(time_zone => C4::Context->tz()) unless $dt;
+    my $hm = sprintf("%02d:%02d", $dt->hour,$dt->minute);
+    my $openingHours = getOpeningHours($branchcode, $dt);
+    return 1 if ($openingHours->[0] le $hm && $hm lt $openingHours->[1]);
+    return undef;
+}
+
+=head2 getOpeningHours
+
+Gets opening hours for the given branchcode. Opening hours are an array of
+weekdays, with arrays of start time and ending time
+
+@PARAM1 String, branchcode
+@PARAM2 DateTime, OPTIONAL weekday to check for openness. Defaults to current time | now()
+@RETURNS ARRAYRef of HH:MM, ex.
+        [
+          '12:22', #opening time
+          '22:00', #closing time
+        ]
+
+@THROWS from _getOpeningHoursFromSyspref()
+
+=cut
+
+sub getOpeningHours {
+    my ($branchcode, $dt) = @_;
+    #Should cache the syspref de-yaml-ization, but no Koha::Cache here yet.
+
+    $dt = DateTime->now(time_zone => C4::Context->tz()) unless $dt;
+    my $openingHours = _getOpeningHoursFromSyspref();
+    my $branchOpeningHours = $openingHours->{$branchcode};
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "System preference 'OpeningHours' is missing opening hours for branch '$branchcode'")
+        unless $branchOpeningHours;
+
+                                                #Array starts from 0, DateTime->day_of_week start from 1
+    my $dailyOpeningHours = $branchOpeningHours->[ $dt->day_of_week()-1 ];
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "System preference 'OpeningHours' is missing opening hours for branch '$branchcode' and weekday '".$dt->day_of_week()."'")
+        unless $dailyOpeningHours;
+
+    return $dailyOpeningHours;
+}
+
+=head2 _getOpeningHoursFromSyspref
+
+@DEPRECATED use Bug 17015 when it comes out
+
+@RETURNS HASHRef of ARRAYRef of ARRAYRef of HH:MM, ex.
+  {
+    CPL => [
+      ['12:22', #opening time
+       '22:00', #closing time
+      ],
+      ['12:23',
+       '21:30',
+      ],
+      ...
+    ],
+    FPL => [
+      ...
+   ],
+    ...
+  }
+
+@THROWS Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable if syspref "OpeningHours" is not properly set
+
+=cut
+
+sub _getOpeningHoursFromSyspref {
+    my $logger = Koha::Logger->get({category => __PACKAGE__});
+    my $sp = C4::Context->preference('OpeningHours');
+    Koha::Exceptions::Config->throw(error => 'System preference "OpeningHours" not set. Cannot get opening hours!')
+        unless $sp;
+    eval {
+        $sp = YAML::XS::Load( $sp );
+    };
+    Koha::Exceptions::Config->throw(error => 'System preference "OpeningHours" is not valid YAML. Validate it using yamllint! or '.$@)
+        if $@;
+    $logger->debug("'OpeningHours'-syspref: ".Data::Dumper::Dumper($sp)) if $logger->is_debug;
+    return $sp;
 }
 
 1;

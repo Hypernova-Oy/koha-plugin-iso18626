@@ -23,8 +23,6 @@ use Mojo::JSON;
 
 use C4::Members;
 
-use Koha::Auth::Challenge::Password;
-
 use Scalar::Util qw( blessed );
 use Try::Tiny;
 use Data::Printer;
@@ -159,7 +157,10 @@ sub ss_blocks_post {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        if (blessed($_) && $_->isa('Koha::Exception::UnknownObject')) {
+        if (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
+            return $c->render( status => 404, openapi => { error => "$_" } );
+        }
+        elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         return Koha::Exceptions::rethrow_exception($_);
@@ -183,7 +184,10 @@ sub ss_blocks_put {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        if (blessed($_) && $_->isa('Koha::Exception::UnknownObject')) {
+        if (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
+            return $c->render( status => 404, openapi => { error => "$_" } );
+        }
+        elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         return Koha::Exceptions::rethrow_exception($_);
@@ -200,12 +204,15 @@ sub status {
     my ($borrower, $error);
     return try {
 
-        $borrower = Koha::Auth::Challenge::Password::challenge(
+        my ($status, $cardnumber, $userid) = C4::Auth::checkpw_internal(
                 $username,
                 $password
         );
+        Koha::Exceptions::Password::Invalid->throw(
+            error => 'Wrong username or password'
+        ) unless $status;
 
-        my $kp = GetMember(userid=>$borrower->userid);
+        my $kp = GetMember(userid=>$userid);
         my $flags = C4::Members::patronflags( $kp );
         my $fines_amount = $flags->{CHARGES}->{amount};
         $fines_amount = ($fines_amount and $fines_amount > 0) ? $fines_amount : 0;
@@ -247,7 +254,7 @@ sub status {
         return $c->render( status => 200, openapi => $payload );
     } catch {
         if (blessed($_)){
-            if ($_->isa('Koha::Exception::LoginFailed')) {
+            if ($_->isa('Koha::Exceptions::Password::Invalid')) {
                 return $c->render( status => 400, openapi => { error => $_->error } );
             }
         }
@@ -271,8 +278,11 @@ sub get_self_service_status {
         if (not(blessed($_) && $_->can('rethrow'))) {
             return $c->render( status => 500, openapi => { error => "$_" } );
         }
-        elsif ($_->isa('Koha::Exception::UnknownObject')) {
-            return $c->render( status => 404, openapi => { error => "No such cardnumber" } );
+        elsif (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
+            return $c->render( status => 404, openapi => { error => "$_" } );
+        }
+        elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
+            return $c->render( status => 404, openapi => { error => "$_" } );
         }
         elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours')) {
             $payload = {

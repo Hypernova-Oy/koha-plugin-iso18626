@@ -7,7 +7,6 @@ use Koha::Logger;
 
 use t::db_dependent::opening_hours_context;
 
-use Koha::Libraries;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
 use Koha::Exceptions::Config;

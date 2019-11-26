@@ -30,11 +30,6 @@ use Data::Printer;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 
-# NOTE
-#
-# This controller is for Koha-Suomi 3.16 ported operations. For new patron related
-# endpoints, use /api/v1/patrons and Koha::REST::V1::Patron controller instead
-
 =head2 borrower_ss_blocks -feature
 =cut
 
@@ -55,7 +50,18 @@ sub ss_block_delete {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        return Koha::Exceptions::rethrow_exception($_);
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -76,7 +82,18 @@ sub ss_blocks_delete {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        return Koha::Exceptions::rethrow_exception($_);
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -96,7 +113,18 @@ sub ss_block_get {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        return Koha::Exceptions::rethrow_exception($_);
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -116,7 +144,18 @@ sub ss_block_has {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        return Koha::Exceptions::rethrow_exception($_);
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -137,7 +176,18 @@ sub ss_blocks_list {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        return Koha::Exceptions::rethrow_exception($_);
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -157,13 +207,24 @@ sub ss_blocks_post {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
-        if (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
+        elsif (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
-        return Koha::Exceptions::rethrow_exception($_);
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -184,13 +245,24 @@ sub ss_blocks_put {
 
     } catch {
         $logger->warn(np($_)) if $logger->is_warn();
+        if ( $_->isa('DBIx::Class::Exception') ) {
+            return $c->render(
+                status  => 500,
+                openapi => { error => $_->{msg} }
+            );
+        }
         if (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
-        return Koha::Exceptions::rethrow_exception($_);
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -257,8 +329,25 @@ sub status {
             if ($_->isa('Koha::Exceptions::Password::Invalid')) {
                 return $c->render( status => 400, openapi => { error => $_->error } );
             }
+            elsif ( $_->isa('DBIx::Class::Exception') ) {
+                return $c->render(
+                    status  => 500,
+                    openapi => { error => $_->{msg} }
+                );
+            }
+            else {
+                return $c->render(
+                    status  => 500,
+                    openapi => { error => "Something went wrong, check the logs." }
+                );
+            }
         }
-        Koha::Exceptions::rethrow_exception($_);
+        else {
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
     };
 }
 
@@ -312,7 +401,10 @@ sub get_self_service_status {
             return $c->render( status => 501, openapi => { error => "$_" } );
         }
         else {
-            return $c->render( status => 501, openapi => { error => $_->trace->as_string } );
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
         }
     };
 }

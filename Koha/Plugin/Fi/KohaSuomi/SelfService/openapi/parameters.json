@@ -12,7 +12,7 @@
     "in": "body",
     "required": true,
     "schema" : {
-      "$ref": "./definitions/borrowerSelfServiceBlock.json"
+      "$ref": "./definitions.json#/borrowerSelfServiceBlock"
     }
   },
   "borrowernumberPathParam": {
@@ -21,5 +21,12 @@
     "description": "Internal patron identifier",
     "required": true,
     "type": "integer"
+  },
+  "branchcodePathParam": {
+    "name": "branchcode",
+    "in": "path",
+    "description": "Internal library identifier",
+    "required": true,
+    "type": "string"
   }
 }

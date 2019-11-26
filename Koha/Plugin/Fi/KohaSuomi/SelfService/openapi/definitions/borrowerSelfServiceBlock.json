@@ -1,9 +1,5 @@
 {
   "type": "object",
-  "required": [
-    "borrowernumber",
-    "branchcode"
-  ],
   "properties": {
     "borrower_ss_block_id": {
       "description": "primary key",
@@ -35,5 +31,6 @@
       "description": "When was this block created. If not provided, uses NOW()",
       "format": "date-time"
     }
-  }
+  },
+  "required": ["borrowernumber", "branchcode"]
 }

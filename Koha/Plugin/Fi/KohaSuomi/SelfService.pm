@@ -101,8 +101,8 @@ sub upgrade {
 sub api_routes {
     my ( $self, $args ) = @_;
 
-    my $spec_str = $self->mbf_read('openapi.json');
-    my $spec     = decode_json($spec_str);
+    my $spec_dir = $self->mbf_dir();
+    my $spec = JSON::Validator->new->schema($spec_dir . "/openapi.json")->schema->{data};
 
     return $spec;
 }

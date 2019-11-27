@@ -103,7 +103,7 @@ sub ss_block_get {
 
     my $payload;
     try {
-        my $borrowernumber       = $c->param('borrowernumber'); # Mojolicious::Plugin::Swagger
+        my $borrowernumber       = $c->param('borrowernumber');
         my $borrower_ss_block_id = $c->validation->param('borrower_ss_block_id');
 
         #If we didn't get any exceptions, we succeeded
@@ -135,7 +135,7 @@ sub ss_block_has {
     my $payload;
     try {
         my $borrowernumber = $c->param('borrowernumber');
-        my $branchcode = $c->validation->param('branchcode');
+        my $branchcode = $c->validation->param('branchcode') || $c->stash('koha.user')->branchcode;
 
         #If we didn't get any exceptions, we succeeded
         my $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::hasBlock($borrowernumber, $branchcode);
@@ -199,6 +199,7 @@ sub ss_blocks_post {
         my $borrowernumber       = $c->validation->param('borrowernumber');
         my $block = $c->validation->param('borrower_ss_block');
         $block->{borrowernumber} = $borrowernumber if $borrowernumber;
+        $block->{created_by} = $c->stash('koha.user')->borrowernumber;
 
         #If we didn't get any exceptions, we succeeded
         $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::createBlock($block);
@@ -357,7 +358,7 @@ sub get_self_service_status {
     my $payload;
     try {
         my $patron = Koha::Patrons->cast($c->validation->param('cardnumber'));
-        my $branchcode = $c->validation->param('branchcode');
+        my $branchcode = $c->validation->param('branchcode') || $c->stash('koha.user')->branchcode;
         Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($patron, $branchcode, 'accessMainDoor');
         #If we didn't get any exceptions, we succeeded
         $payload = {permission => Mojo::JSON->true};

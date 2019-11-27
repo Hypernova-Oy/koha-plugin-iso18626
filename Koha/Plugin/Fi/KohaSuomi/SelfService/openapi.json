@@ -32,6 +32,30 @@
               }
             }
           }
+        },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "No self-service blocks for the given Patron",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
         }
       }
     },
@@ -52,7 +76,6 @@
       "x-koha-authorization": {
         "allow-owner": true,
         "allow-guarantor": true,
-        "allow-guarantee": true,
         "permissions": {
           "borrowers": "ss_blocks_list"
         }
@@ -67,8 +90,26 @@
             }
           }
         },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
         "404": {
           "description": "No self-service blocks for the given Patron",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -104,8 +145,26 @@
             "$ref": "openapi/definitions.json#/error"
           }
         },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
         "404": {
           "description": "No related object found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -149,6 +208,30 @@
               }
             }
           }
+        },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "No related object found",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
         }
       }
     },
@@ -170,7 +253,6 @@
       "x-koha-authorization": {
         "allow-owner": true,
         "allow-guarantor": true,
-        "allow-guarantee": true,
         "permissions": {
           "borrowers": "ss_blocks_get"
         }
@@ -182,8 +264,26 @@
             "$ref": "openapi/definitions.json#/borrowerSelfServiceBlock"
           }
         },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
         "404": {
           "description": "No such self-service block",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -210,7 +310,6 @@
       "x-koha-authorization": {
         "allow-owner": true,
         "allow-guarantor": true,
-        "allow-guarantee": true,
         "permissions": {
           "borrowers": "ss_blocks_get"
         }
@@ -224,6 +323,24 @@
         },
         "204": {
           "description": "No such self-service block"
+        },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
         }
       }
     }
@@ -268,6 +385,12 @@
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
         }
       }
     }
@@ -308,6 +431,18 @@
           "description": "Permission granted/denied",
           "schema": {
             "$ref": "openapi/definitions.json#/borrowerSelfServiceStatus"
+          }
+        },
+        "401": {
+          "description": "Unauthorized",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "403": {
+          "description": "No permission",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
           }
         },
         "404": {

@@ -4,9 +4,10 @@ Self-service permission API for Koha ILS
 # Requirements
 
 * Data::Printer (min. version 0.38)
+* DateTime::Format::ISO8601
 
 ```
-cpanm Data::Printer
+cpanm Data::Printer DateTime::Format::ISO8601
 ```
 
 # Downloading

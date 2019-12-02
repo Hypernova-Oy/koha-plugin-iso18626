@@ -1,6 +1,14 @@
 # koha-plugin-self-service
 Self-service permission API for Koha ILS
 
+# Requirements
+
+* Data::Printer (min. version 0.38)
+
+```
+cpanm Data::Printer
+```
+
 # Downloading
 
 From the [release page](https://github.com/bywatersolutions/koha-plugin-kitchen-sink/releases) you can download the relevant *.kpz file

@@ -1,7 +1,7 @@
 {
   "name": "koha-plugin-self-service",
-  "version": "1.0.14",
-  "previous_version": "1.0.13",
+  "version": "1.0.15",
+  "previous_version": "1.0.14",
   "description": "Koha Self Service Permission API",
   "devDependencies": {
     "gulp": "^4.0.0",

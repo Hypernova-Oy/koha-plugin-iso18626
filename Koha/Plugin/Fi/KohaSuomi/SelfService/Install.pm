@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
 
   });
 
-  # Create borrower attributes
-  my $sstc;
+    # Create borrower attributes
+    my $sstc;
     unless ($sstc = Koha::Patron::Attribute::Types->find({ code => 'SST&C'})) {
         $sstc = Koha::Patron::Attribute::Type->new({
             code => 'SST&C',
@@ -74,43 +74,43 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
         })->store;
     }
 
-  # Create permissions
-  eval {
-    C4::Context->dbh->do(q{
+    # Create permissions
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'get_self_service_status',   'Allow listing all self-service blocks for a Patron.');
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'ss_blocks_list',            'Allow listing all self-service blocks for a Patron.');
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'ss_blocks_get',             'Allow fetching the data of a single self-service block for a Patron.');
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'ss_blocks_create',          'Allow creating a single self-service block for a Patron.');
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'ss_blocks_edit',            'Allow editing the data of a single self-service block for a Patron.');
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 INSERT INTO permissions (module_bit, code, description) VALUES
 ( 4,    'ss_blocks_delete',          'Allow deleting a single self-service block for a Patron.');
 });
-  };
+    };
 
     # Create system preferences
     my $SSRules = <<YAML;
@@ -174,36 +174,36 @@ sub uninstall {
        $ssban->delete if defined $ssban;
 
     # Delete permissions
-  eval {
-    C4::Context->dbh->do(q{
+    eval {
+        C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'get_self_service_status';
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_list';
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_get';
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+        C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_create';
 });
   };
-  eval {
-    C4::Context->dbh->do(q{
+    eval {
+      C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_edit';
 });
-  };
-  eval {
-    C4::Context->dbh->do(q{
+    };
+    eval {
+      C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_delete';
 });
-  };
+    };
   
     my $table = $self->get_qualified_table_name('borrower_ss_blocks');
 

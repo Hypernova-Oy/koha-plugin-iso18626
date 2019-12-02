@@ -26,6 +26,7 @@ use Modern::Perl;
 use utf8;
 
 use Test::More tests => 5;
+use Test::Deep;
 use Test::Mojo;
 use Data::Printer;
 
@@ -160,9 +161,9 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
         $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::storeBlock(
             Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::createBlock($block)
         );
+        $block->{'created_on'} = $block->{'created_on'}->strftime('%Y-%m-%d %H:%M:%S');
+        $block->{'expirationdate'} = $block->{'expirationdate'}->strftime('%Y-%m-%d %H:%M:%S') if ref($block->{expirationdate}) eq 'DateTime';
     }
-
-    warn Data::Dumper::Dumper(\@blocks);
 
     $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');

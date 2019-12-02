@@ -193,7 +193,7 @@ DELETE FROM permissions WHERE code = 'ss_blocks_get';
         C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_create';
 });
-  };
+    };
     eval {
       C4::Context->dbh->do(q{
 DELETE FROM permissions WHERE code = 'ss_blocks_edit';

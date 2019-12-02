@@ -153,12 +153,12 @@ sub CheckSelfServicePermission {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'closed');
             $_->rethrow();
         }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::SelfService')) {
-            _WriteAccessLog($action, $patron->{borrowernumber}, 'denied');
-            $_->rethrow();
-        }
         elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
             _WriteAccessLog($action, $patron->{borrowernumber}, 'misconfigured');
+            $_->rethrow();
+        }
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception')) {
+            _WriteAccessLog($action, $patron->{borrowernumber}, 'denied');
             $_->rethrow();
         }
         $_->rethrow;

@@ -1,7 +1,8 @@
 #!perl
 
 use Modern::Perl '2014';
-use Test::Most tests => 2;
+use Test::More tests => 2;
+use Test::Exception;
 use Test::MockModule;
 use Try::Tiny;
 

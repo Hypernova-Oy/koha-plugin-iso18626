@@ -5,7 +5,8 @@ BEGIN {
 }
 
 use Modern::Perl '2015';
-use Test::Most tests => 10;
+use Test::More tests => 10;
+use Test::Exception;
 use Test::MockModule;
 use Try::Tiny;
 use Data::Printer;

@@ -25,7 +25,7 @@ BEGIN {
 use Modern::Perl;
 use utf8;
 
-use Test::Most tests => 5;
+use Test::More tests => 5;
 use Test::Mojo;
 use Data::Printer;
 

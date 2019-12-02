@@ -296,7 +296,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         ok($debarment = Koha::Patron::Debarments::GetDebarments({borrowernumber => $b->{borrowernumber}})->[0],
            "Debarment given");
 
-        ok($f = Koha::Account::Line->new({ borrowernumber => $b->{borrowernumber}, amountoutstanding => 1000, note => 'fid' })->store(),
+        ok($f = Koha::Account::Line->new({ borrowernumber => $b->{borrowernumber}, amountoutstanding => 1000, note => 'fid', interface => 'intranet' })->store(),
            "Fine given");
     });
     subtest("Given a system preference 'SSRules'", sub {

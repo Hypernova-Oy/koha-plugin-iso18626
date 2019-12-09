@@ -113,6 +113,35 @@ sub api_namespace {
     return 'kohasuomi';
 }
 
+sub configure {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    unless ( $cgi->param('save') ) {
+        my $template = $self->get_template({ file => 'configure.tt' });
+
+        ## Grab the values we already have for our settings, if any exist
+        $template->param(
+            SSRules => C4::Context->preference( 'SSRules' ),
+            OpeningHours => C4::Context->preference( 'OpeningHours' ),
+            EncryptionConfiguration => C4::Context->preference( 'EncryptionConfiguration' ),
+            SSBlockCleanOlderThanThis => C4::Context->preference( 'SSBlockCleanOlderThanThis' ),
+            SSBlockDefaultDuration => C4::Context->preference( 'SSBlockDefaultDuration' ),
+        );
+
+        $self->output_html( $template->output() );
+    }
+    else {
+        C4::Context->set_preference('SSRules', $cgi->param('SSRules'));
+        C4::Context->set_preference('OpeningHours', $cgi->param('OpeningHours'));
+        C4::Context->set_preference('EncryptionConfiguration', $cgi->param('EncryptionConfiguration'));
+        C4::Context->set_preference('SSBlockCleanOlderThanThis', $cgi->param('SSBlockCleanOlderThanThis'));
+        C4::Context->set_preference('SSBlockDefaultDuration', $cgi->param('SSBlockDefaultDuration'));
+
+        $self->go_home();
+    }
+}
+
 =head2 CheckSelfServicePermission
  @param {Koha::Patron or something castable}
  @param {String} Branchcode of the Branch where the user is requesting access

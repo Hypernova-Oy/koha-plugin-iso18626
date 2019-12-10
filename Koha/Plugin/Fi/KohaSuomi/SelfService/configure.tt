@@ -25,11 +25,11 @@
                         <input type="hidden" name="class" value="[% CLASS %]"/>
                         <input type="hidden" name="method" value="[% METHOD %]"/>
 
-                        <h4>Self-service resource usage rules and checks</h4>
+                        <h4>Resource usage rules and checks</h4>
                         <p>
                             <textarea name="SSRules" value="" cols="40" rows="11">[% SSRules %]</textarea>
                         </p>
-                        <p>Used by the /contrib/kohasuomi/patrons/ssstatus -endpoint (real-time self-service access check) and block list generation cronjob self_service_lists.pl</p>
+                        <p>Used by the /api/v1/contrib/kohasuomi/patrons/ssstatus -endpoint (real-time self-service access check) and block list generation cronjob self_service_lists.pl</p>
                         <p>The rules are YAML-formatted.
                             Example:
                             <pre>
@@ -63,7 +63,7 @@
                     </td></tr>
 
                     <tr><td>
-                        <h4>Self-service opening hours</h4>
+                        <h4>Opening hours</h4>
                         <p>
                             <textarea name="OpeningHours" value="" cols="40" rows="11">[% OpeningHours %]</textarea>
                         </p>
@@ -93,7 +93,7 @@
                         <p>
                             Then each weekday has a list of opening hour and closing hour. If you make changes, remember to validate the YAML using https://www.yamllint.com</p>
                         <p>
-                            Trying to use the self-service REST API /borrowers/ssstatus without this syspref set will make the API return with configuration errors.
+                            Trying to use the self-service REST API /api/v1/contrib/kohasuomi/patrons/ssstatus without this syspref set will make the API return with configuration errors.
                         </p>
                     </td></tr>
                     <tr><td>
@@ -113,7 +113,7 @@
                             </pre>
                             This is a YAML-configuration document.
                             Root keys are branchcodes, then each branchcode MUST define a list of weekdays, starting from monday - to - sunday.
-                            Then each weekday has a list of opening hour and closing hour. If you make changes, remember to validate the YAML using https://www.yamllint.com Trying to use the self-service REST API /borrowers/ssstatus without this syspref set will make the API return with configuration errors.
+                            Then each weekday has a list of opening hour and closing hour. If you make changes, remember to validate the YAML using https://www.yamllint.com Trying to use the self-service REST API /api/v1/contrib/kohasuomi/ssstatus without this syspref set will make the API return with configuration errors.
                         </p>
                     </td></tr>
                     <tr><td>

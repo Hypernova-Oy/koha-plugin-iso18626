@@ -11,15 +11,16 @@ use Try::Tiny;
 use Scalar::Util qw(blessed);
 use utf8;
 
+use Data::Dumper;
 use DateTime;
-use DateTime::Format::ISO8601;
 use DateTime::Format::MySQL;
-use Data::Printer;
 use YAML::XS;
 use Storable;
 
 use C4::Context;
+use Koha::Logger;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Log;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
 
@@ -28,7 +29,7 @@ use Koha::Exceptions::Patron;
 use Koha::Exceptions::Plugin;
 
 use Koha::Logger;
-my $logger = bless({lazyLoad => {category => __PACKAGE__}}, 'Koha::Logger');
+my $logger = Koha::Logger->get;
 
 use fields qw(borrower_ss_block_id borrowernumber branchcode expirationdate created_by created_on);
 
@@ -68,10 +69,6 @@ sub new {
 sub _getDefaultExpirationdate {
     my $ddur = C4::Context->preference('SSBlockDefaultDuration') // Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "Syspref 'SSBlockDefaultDuration' is undefined");
     return DateTime->now(time_zone => C4::Context->tz)->add(days => $ddur);
-}
-
-sub toString {
-    return np($_[0], multiline => 0, class => {show_methods => 'none'}, filters => { 'DateTime' => sub { $_[0]->datetime } } );
 }
 
 sub swaggerize {

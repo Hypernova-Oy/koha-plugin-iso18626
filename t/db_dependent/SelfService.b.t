@@ -9,12 +9,12 @@ use Try::Tiny;
 use DateTime;
 use Scalar::Util qw(blessed);
 use File::Basename;
-use Data::Printer;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
-use C4::Members::Attributes;
 use Koha::Patrons;
+use Koha::Patron::Attribute;
+use Koha::Patron::Attributes;
 use Koha::Patron::Debarments;
 
 use t::db_dependent::SelfService_context;
@@ -55,7 +55,8 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
             gonenoaddress => 0,
         }
     });
-    my $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
+    my $p = Koha::Patrons->find($user->{borrowernumber});
+    my $b = $p->unblessed;
 
     C4::Context->_new_userenv('DUMMY SESSION');
     C4::Context->set_userenv($user->{borrowernumber},$user->{userid},'SSAPIUser','firstname','surname', 'CPL', 'CEEPEEÄL', 0, '', '');
@@ -78,7 +79,10 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
     subtest("Given a user with all relevant blocks and bans", sub {
         plan tests => 3;
 
-        C4::Members::Attributes::SetBorrowerAttributes($b->{borrowernumber}, [{ code => 'SSBAN', value => '1' }]);
+        $p->extended_attributes(
+            $p->extended_attributes->merge_and_replace_with([{ code => 'SST&C', attribute => '0' },
+                                                             { code => 'SSBAN', attribute => '1' }])
+        );
 
         Koha::Patron::Debarments::AddDebarment({borrowernumber => $b->{borrowernumber}});
         ok($debarment = Koha::Patron::Debarments::GetDebarments({borrowernumber => $b->{borrowernumber}})->[0],
@@ -131,8 +135,10 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
     subtest("Self-service terms and conditions accepted, but user's self-service permissions have been revoked", sub {
         plan tests => 1;
 
-        C4::Members::Attributes::SetBorrowerAttributes($b->{borrowernumber}, [{ code => 'SST&C', value => '1' },
-                                                                            { code => 'SSBAN', value => '1' }]);
+        $p->extended_attributes(
+            $p->extended_attributes->merge_and_replace_with([{ code => 'SST&C', attribute => '1' },
+                                                             { code => 'SSBAN', attribute => '1' }])
+        );
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
         throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked',
@@ -141,8 +147,10 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
     subtest("Self-service permission reinstituted, but the user has a wrong borrower category", sub {
         plan tests => 1;
 
-        C4::Members::Attributes::SetBorrowerAttributes($b->{borrowernumber}, [{ code => 'SST&C', value => '1' },
-                                                                            { code => 'SSBAN', value => '0' }]);
+        $p->extended_attributes(
+            $p->extended_attributes->merge_and_replace_with([{ code => 'SST&C', attribute => '1' },
+                                                             { code => 'SSBAN', attribute => '0' }])
+        );
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
         throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory',
@@ -282,7 +290,9 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
             gonenoaddress => 0,
         }
     });
-    my $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
+    my $p = Koha::Patrons->find($user->{borrowernumber});
+    my $b = $p->unblessed;
+
     C4::Context->_new_userenv('DUMMY SESSION');
     C4::Context->set_userenv($user->{borrowernumber},$user->{userid},'SSAPIUser','firstname','surname', 'CPL', 'CEEPEEÄL', 0, '', '');
     $userenv = C4::Context->userenv;
@@ -290,7 +300,9 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
     subtest("Given a user with all relevant blocks and bans", sub {
         plan tests => 2;
 
-        C4::Members::Attributes::SetBorrowerAttributes($b->{borrowernumber}, [{ code => 'SSBAN', value => '1' }]);
+        $p->extended_attributes(
+            $p->extended_attributes->merge_and_replace_with([{ code => 'SSBAN', attribute => '1' }])
+        );
 
         Koha::Patron::Debarments::AddDebarment({borrowernumber => $b->{borrowernumber}});
         ok($debarment = Koha::Patron::Debarments::GetDebarments({borrowernumber => $b->{borrowernumber}})->[0],

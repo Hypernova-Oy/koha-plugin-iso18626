@@ -28,7 +28,6 @@ use utf8;
 use Test::More tests => 5;
 use Test::Deep;
 use Test::Mojo;
-use Data::Printer;
 
 use t::lib::TestBuilder;
 use t::lib::Mocks;

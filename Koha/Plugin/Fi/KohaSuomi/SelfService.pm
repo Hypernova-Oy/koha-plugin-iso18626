@@ -23,10 +23,9 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
-use Mojo::JSON qw(decode_json);;
+use Mojo::JSON qw(decode_json);
 
 use Carp;
-use DateTime::Format::ISO8601;
 use Time::Piece ();
 use Try::Tiny;
 use Scalar::Util qw(blessed);
@@ -34,9 +33,12 @@ use YAML::XS;
 
 use C4::Context;
 use C4::Log;
-use C4::Members::Attributes;
+use Koha::Patron::Attributes;
 
+use Koha::ActionLog;
+use Koha::ActionLogs;
 use Koha::Caches;
+use Koha::DateUtils;
 use Koha::Logger;
 use Koha::Patron::Debarments;
 
@@ -63,7 +65,7 @@ our $metadata = {
     description     => 'This plugin implements Self Service Permission API for use with access control devices'
 };
 
-my $logger = bless({lazyLoad => {category => __PACKAGE__}}, 'Koha::Logger');
+my $logger = Koha::Logger->get;
 
 sub new {
     my ( $class, $args ) = @_;
@@ -250,7 +252,7 @@ sub _CheckMaxFines {
 sub _CheckMinimumAge {
     my ($patron, $rules) = @_;
     if ($patron->{dateofbirth}) {
-        my $dob = DateTime::Format::ISO8601->parse_datetime($patron->{dateofbirth});
+        my $dob = Koha::DateUtils::dt_from_string($patron->{dateofbirth}, 'sql');
         $dob->set_time_zone( C4::Context->tz() );
         my $minimumDob = DateTime->now(time_zone => C4::Context->tz())->subtract(years => $rules->{MinimumAge});
         if (DateTime->compare($dob, $minimumDob) < 0) {
@@ -263,16 +265,16 @@ sub _CheckMinimumAge {
 
 sub _CheckTaC {
     my ($patron, $rules) = @_;
-    my $agreement = C4::Members::Attributes::GetBorrowerAttributeValue($patron->{borrowernumber}, 'SST&C');
-    unless ($agreement) {
+    my $agreement = Koha::Patron::Attributes->find({borrowernumber => $patron->{borrowernumber}, code => 'SST&C'});
+    if (not($agreement) || not($agreement->attribute)) {
         Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted->throw();
     }
 }
 
 sub _CheckPermission {
     my ($patron, $rules) = @_;
-    my $ban = C4::Members::Attributes::GetBorrowerAttributeValue($patron->{borrowernumber}, 'SSBAN');
-    if ($ban) {
+    my $ban = Koha::Patron::Attributes->find({borrowernumber => $patron->{borrowernumber}, code => 'SSBAN'});
+    if ($ban && $ban->attribute) {
         Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked->throw();
     }
 }
@@ -312,7 +314,10 @@ sub _CheckOpeningHours {
 sub GetAccessLogs {
     my ($userNumber) = @_;
 
-    return C4::Log::GetLogs(undef, undef, undef, ['SS'], undef, $userNumber, undef);
+    return Koha::ActionLogs->search({
+        module => 'SS',
+        object => $userNumber,
+    })->unblessed();
 }
 
 =head2 _WriteAccessLog

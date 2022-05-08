@@ -9,7 +9,6 @@ use Modern::Perl '2015';
 
 use Try::Tiny;
 use Scalar::Util qw(blessed);
-use Data::Printer;
 
 use Storable;
 
@@ -21,7 +20,7 @@ use Koha::Exceptions;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
 
 use Koha::Logger;
-my $logger = bless({lazyLoad => {category => __PACKAGE__}}, 'Koha::Logger');
+my $logger = Koha::Logger->get;
 
 our $actionLogModuleName = 'SELF-SERVICE';
 

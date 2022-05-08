@@ -10,7 +10,6 @@ use Test::Exception;
 use Test::Deep;
 use Test::MockModule;
 use Try::Tiny;
-use Data::Printer;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Block;

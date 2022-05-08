@@ -25,10 +25,10 @@ use C4::Members;
 
 use Scalar::Util qw( blessed );
 use Try::Tiny;
-use Data::Printer;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Log;
 
 =head2 borrower_ss_blocks -feature
 =cut
@@ -49,7 +49,7 @@ sub ss_block_delete {
         return $c->render(status => 200, openapi => $payload);
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -81,7 +81,7 @@ sub ss_blocks_delete {
         return $c->render(status => 200, openapi => $payload);
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -112,7 +112,7 @@ sub ss_block_get {
         return $c->render(status => 404, openapi => {error => "No such self-service block"}) unless $block;
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -143,7 +143,7 @@ sub ss_block_has {
         return $c->render(status => 204, openapi => {}) unless $block;
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -175,7 +175,7 @@ sub ss_blocks_list {
         return $c->render( status => 404, openapi => { error => "No self-service blocks" } );
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -207,7 +207,7 @@ sub ss_blocks_post {
         return $c->render(status => 200, openapi => $block->swaggerize());
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,
@@ -245,7 +245,7 @@ sub ss_blocks_put {
         return $c->render(status => 200, openapi => $block);
 
     } catch {
-        $logger->warn(np($_)) if $logger->is_warn();
+        $logger->warn(toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,

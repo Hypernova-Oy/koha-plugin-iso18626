@@ -5,8 +5,7 @@ BEGIN {
 }
 
 use Modern::Perl '2015';
-use Data::Printer;
-use Test::Most tests => 5;
+use Test::More tests => 5;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 

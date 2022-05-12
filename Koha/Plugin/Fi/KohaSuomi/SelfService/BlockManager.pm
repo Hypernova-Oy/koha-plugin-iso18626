@@ -13,8 +13,9 @@ use Scalar::Util qw(blessed);
 use Storable;
 
 use C4::Context;
+use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Block;
-use C4::Log;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Log qw(toString);
 
 use Koha::Exceptions;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
@@ -145,7 +146,7 @@ sub getBlock {
     my ($block) = $dbh->selectall_array($sqlCache{getBlockSth}, { Slice => {} }, $borrower_ss_block_id);
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
     bless($block, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block') if ($block);
-    $logger->debug(sprintf("Got '%s'", ($block) ? $block->toString(): 'undef')) if $logger->is_debug();
+    $logger->debug(sprintf("Got '%s'", ($block) ? toString($block): 'undef')) if $logger->is_debug();
     return $block;
 }
 
@@ -181,7 +182,7 @@ sub hasBlock {
     my ($block) = $dbh->selectall_array($sqlCache{hasBlockSth}, { Slice => {} }, $borrowernumber, $branchcode, $expirationStatusDate);
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
     $block = bless($block, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block') if ($block);
-    $logger->debug(sprintf("Checked '%s'", ($block) ? $block->toString(): 'undef')) if $logger->is_debug();
+    $logger->debug(sprintf("Checked '%s'", ($block) ? toString($block): 'undef')) if $logger->is_debug();
     return $block;
 }
 
@@ -239,7 +240,7 @@ sub storeBlock {
     #UPDATE
     if ($block->id) {
         if (_isSthStale($sqlCache{updateBlockSth}, $dbh)) {
-            $logger->debug(sprintf("Preparing a new statement using '%s' to update %s", $dbh->{Driver}, $block->toString())) if $logger->is_debug();
+            $logger->debug(sprintf("Preparing a new statement using '%s' to update %s", $dbh->{Driver}, toString($block))) if $logger->is_debug();
             $sqlCache{updateBlockSth} = $dbh->prepare("UPDATE $table SET borrowernumber = ?, branchcode = ?, expirationdate = ?, notes = ? WHERE borrower_ss_block_id = ?");
         }
 
@@ -257,7 +258,7 @@ sub storeBlock {
     #INSERT
     else {
         if (_isSthStale($sqlCache{createBlockSth}, $dbh)) {
-            $logger->debug(sprintf("Preparing a new statement using '%s' to create %s", $dbh->{Driver}, $block->toString())) if $logger->is_debug();
+            $logger->debug(sprintf("Preparing a new statement using '%s' to create %s", $dbh->{Driver}, toString($block))) if $logger->is_debug();
             $sqlCache{createBlockSth} = $dbh->prepare("INSERT INTO $table VALUES (?,?,?,?,?,?,?)");
         }
 
@@ -325,11 +326,11 @@ sub _checkBorrowerOrCreatorExists {
     # So optimizing towards easier maintenance.
     my ($bn) = $dbh->selectrow_array($sqlCache{checkBorrowerSth}, undef, $block->created_by());
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    Koha::Exceptions::Patron->throw(error => sprintf("Missing Creator when trying to add '%s'", $block->toString())) unless $bn;
+    Koha::Exceptions::Patron->throw(error => sprintf("Missing Creator when trying to add '%s'", toString($block))) unless $bn;
 
     ($bn) = $dbh->selectrow_array($sqlCache{checkBorrowerSth}, undef, $block->borrowernumber());
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    Koha::Exceptions::Patron->throw(error => sprintf("Missing Borrower when trying to add '%s'", $block->toString())) unless $bn;
+    Koha::Exceptions::Patron->throw(error => sprintf("Missing Borrower when trying to add '%s'", toString($block))) unless $bn;
 
     return 1;
 }
@@ -345,7 +346,7 @@ sub _checkBranchExists {
 
     my ($bc) = $dbh->selectrow_array($sqlCache{checkBranchSth}, undef, $block->branchcode());
     Koha::Exceptions::Exception->throw(error => $dbh->errstr()) if $dbh->errstr();
-    Koha::Exceptions::Library::NotFound->throw(error => sprintf("Missing Branch when trying to add '%s'", $block->toString())) unless $bc;
+    Koha::Exceptions::Library::NotFound->throw(error => sprintf("Missing Branch when trying to add '%s'", toString($block))) unless $bc;
     return $bc;
 }
 

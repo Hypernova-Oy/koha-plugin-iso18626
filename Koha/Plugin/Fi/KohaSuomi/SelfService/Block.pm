@@ -20,7 +20,7 @@ use Storable;
 use C4::Context;
 use Koha::Logger;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
-use Koha::Plugin::Fi::KohaSuomi::SelfService::Log;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Log qw(toString);
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
 
@@ -55,10 +55,10 @@ as that sits at a clear infrastructure boundary.
 sub new {
     my ($class, $params) = @_;
     my $self = bless($params, $class); #Use the BlockManager if you want to detach the given parameters from the object itself.
-    $logger->trace(sprintf("Constructor params '%s'", $self->toString())) if $logger->is_trace();
+    $logger->trace(sprintf("Constructor params '%s'", toString($self))) if $logger->is_trace();
 
     $self->{created_by} = C4::Context->userenv->{number} if (not($self->{created_by}) && C4::Context->userenv); #Current logged in user
-    Koha::Exceptions::Plugin::ForbiddenAction->throw(error => sprintf("Trying to create '%s', but nobody is logged in?", $self->toString())) unless ($self->{created_by});
+    Koha::Exceptions::Plugin::ForbiddenAction->throw(error => sprintf("Trying to create '%s', but nobody is logged in?", toString($self))) unless ($self->{created_by});
 
     $self->{created_on} = DateTime->now(time_zone => C4::Context->tz) unless ($self->{created_on});
 
@@ -78,7 +78,8 @@ sub swaggerize {
     $_[0]->{created_by}           += 0;
     $_[0]->{created_on}           = (blessed($_[0]->{created_on})) ? $_[0]->{created_on}->iso8601() : $_[0]->{created_on};
 
-    return bless($_[0], 'HASH');
+    my %a = %{$_[0]}; #unbless the reference
+    return \%a;
 }
 
 sub toYaml {

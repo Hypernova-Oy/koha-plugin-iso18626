@@ -40,7 +40,7 @@ subtest("Scenario: Create a block without a logged in user", sub {
         my $block = Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::createBlock({}); #This should throw
         Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::storeBlock($block);
     }, 'Koha::Exceptions::Plugin::ForbiddenAction');
-    is($@, "Trying to create 'Koha::Plugin::Fi::KohaSuomi::SelfService::Block  { internals: {} }', but nobody is logged in?");
+    like($@, qr/Trying to create .+?Koha::Plugin::Fi::KohaSuomi::SelfService::Block/);
 });
 
 subtest("Scenario: Having logged in, create a block", sub {
@@ -335,11 +335,11 @@ subtest("Scenario: Cleanup stale blocks", sub {
 subtest("Scenario: Verify action logs are created.", sub {
     plan tests => 2;
 
-    ok(my $logs = C4::Log::GetLogs(undef, undef, $librarian->{borrowernumber}, [$Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager::actionLogModuleName]),
+    ok(my $logs = Koha::Plugin::Fi::KohaSuomi::SelfService::GetAccessLogs($librarian->{borrowernumber}),
         "Given all the self-service branch specific block action log entries");
 
-    is(@$logs, 12,
-        "Then there are the correct amount of logs");
+    is(@$logs, 0,
+        "Then there are no logs, since the Block-API doesn't generate ActionLog-entries");
 });
 
 done_testing();

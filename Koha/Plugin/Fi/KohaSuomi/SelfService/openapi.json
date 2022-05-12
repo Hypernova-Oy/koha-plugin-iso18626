@@ -183,10 +183,8 @@
         "application/json"
       ],
       "parameters": [
-        {
-          "$ref": "openapi/parameters.json#/borrowernumberPathParam",
-          "$ref": "openapi/parameters.json#/borrower_ss_block_idPathParam"
-        }
+        { "$ref": "openapi/parameters.json#/borrowernumberPathParam" },
+        { "$ref": "openapi/parameters.json#/borrower_ss_block_idPathParam" }
       ],
       "x-koha-authorization": {
         "permissions": {
@@ -245,10 +243,8 @@
         "application/json"
       ],
       "parameters": [
-        {
-          "$ref": "openapi/parameters.json#/borrowernumberPathParam",
-          "$ref": "openapi/parameters.json#/borrower_ss_block_idPathParam"
-        }
+        { "$ref": "openapi/parameters.json#/borrowernumberPathParam" },
+        { "$ref": "openapi/parameters.json#/borrower_ss_block_idPathParam" }
       ],
       "x-koha-authorization": {
         "allow-owner": true,
@@ -302,10 +298,8 @@
         "application/json"
       ],
       "parameters": [
-        {
-          "$ref": "openapi/parameters.json#/borrowernumberPathParam",
-          "$ref": "openapi/parameters.json#/branchcodePathParam"
-        }
+        { "$ref": "openapi/parameters.json#/borrowernumberPathParam" },
+        { "$ref": "openapi/parameters.json#/branchcodePathParam" }
       ],
       "x-koha-authorization": {
         "allow-owner": true,

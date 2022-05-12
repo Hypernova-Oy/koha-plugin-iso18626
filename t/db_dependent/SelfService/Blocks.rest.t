@@ -58,24 +58,24 @@ subtest "List/GET blocks when there are no blocks to list" => sub {
     $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'List: No permission');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('404')
       ->json_like('/error', qr/No self-service blocks/,
         "No self-service blocks (allow-owner access)");
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('404')
       ->json_like('/error', qr/No self-service blocks/,
         "No self-service blocks");
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/0')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'GET: No permission');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     ($librarian, $librarian_host) = build_patron({
         permissions => [
@@ -87,7 +87,7 @@ subtest "List/GET blocks when there are no blocks to list" => sub {
       ->status_is('404')
       ->json_like('/error', qr/No such self-service block/,
         "No such self-service block");
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     $schema->storage->txn_rollback;
 };
@@ -113,12 +113,13 @@ subtest '/borrowers/{borrowernumber}/ssblocks POST' => sub {
     $t->post_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks' => {Accept => '*/*'} => json => $blocks[0])
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'No permission');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     for my $i (0..$#blocks) {
         $t->post_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$blocks[$i]->{borrowernumber}.'/ssblocks' => {Accept => '*/*'} => json => $blocks[$i])
           ->status_is('200');
-        p($t->tx->res->body) if ($ENV{VERBOSE});
+        print($t->tx->res->body);
+    
         cmp_deeply($t->tx->res->json, noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable($blocks[$i])));
         $blocks[$i]->{borrower_ss_block_id} = $t->tx->res->json->{borrower_ss_block_id};
     }
@@ -131,7 +132,7 @@ subtest '/borrowers/{borrowernumber}/ssblocks POST' => sub {
           ->status_is('200')
           ->json_is('/notes', '😄😄script😆😄/script😆script😆...😄/script😆',
             "notes-field sanitated against xss");
-        p($t->tx->res->body) if ($ENV{VERBOSE});
+    
         $blocks[3]->{borrower_ss_block_id} = $t->tx->res->json->{borrower_ss_block_id};
     });
 
@@ -166,7 +167,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
 
     $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply(
         $t->tx->res->json,
         [
@@ -177,7 +178,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
 
     $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply(
         $t->tx->res->json,
         [noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable($blocks[0]))],
@@ -185,7 +186,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
 
     $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply($t->tx->res->json, noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable($blocks[0])),
         "Get Block");
 
@@ -203,7 +204,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
 
         $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
           ->status_is('200');
-        p($t->tx->res->body) if ($ENV{VERBOSE});
+    
         cmp_deeply(
             $t->tx->res->json,
             [
@@ -242,29 +243,29 @@ subtest '/patrons/{borrowernumber}/ssblocks DELETE' => sub {
     $t->delete_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'No permission');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
 
     $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply($t->tx->res->json, {deleted_count => 2},
         "Deleted all Blocks and deleted_count is as expected");
 
     $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply($t->tx->res->json, {deleted_count => 0},
         "Deleted all Blocks and deleted_count is zero");
 
     $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply($t->tx->res->json, {deleted_count => 1},
         "Deleted a single Block and deleted_count is 1");
 
     $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply($t->tx->res->json, {deleted_count => 0},
         "Trying to delete a single Block which doesn't exist and deleted_count is 0");
 
@@ -292,7 +293,7 @@ subtest "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}" => sub {
 
     $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/hasblock/'.'CPL')
       ->status_is('200');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply(
         $t->tx->res->json,
         noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable({
@@ -302,7 +303,7 @@ subtest "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}" => sub {
 
     $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks/hasblock/'.'IPT')
       ->status_is('204');
-    p($t->tx->res->body) if ($ENV{VERBOSE});
+
     cmp_deeply(
         $t->tx->res->json, undef,
         "Borrower is blocked to branch IPT");

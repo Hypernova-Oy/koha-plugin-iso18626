@@ -1,5 +1,5 @@
 {
-  "/patrons/{borrowernumber}/ssblocks": {
+  "/borrowers/{borrowernumber}/ssblocks": {
     "delete": {
       "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_delete",
       "operationId": "borrower_ss_blocks_delete",
@@ -172,7 +172,7 @@
       }
     }
   },
-  "/patrons/{borrowernumber}/ssblocks/{borrower_ss_block_id}": {
+  "/borrowers/{borrowernumber}/ssblocks/{borrower_ss_block_id}": {
     "delete": {
       "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#ss_block_delete",
       "operationId": "borrower_ss_block_delete",
@@ -287,7 +287,7 @@
       }
     }
   },
-  "/patrons/{borrowernumber}/ssblocks/hasblock/{branchcode}": {
+  "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#ss_block_has",
       "operationId": "borrower_ss_block_has",
@@ -339,7 +339,7 @@
       }
     }
   },
-  "/patrons/status": {
+  "/borrowers/status": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#status",
       "operationId": "status",
@@ -389,7 +389,7 @@
       }
     }
   },
-  "/patrons/ssstatus": {
+  "/borrowers/ssstatus": {
     "get": {
       "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#get_self_service_status",
       "x-koha-authorization": {

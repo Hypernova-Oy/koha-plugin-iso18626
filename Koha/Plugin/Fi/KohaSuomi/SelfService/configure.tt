@@ -29,7 +29,7 @@
                         <p>
                             <textarea name="SSRules" value="" cols="40" rows="11">[% SSRules %]</textarea>
                         </p>
-                        <p>Used by the /api/v1/contrib/kohasuomi/patrons/ssstatus -endpoint (real-time self-service access check) and block list generation cronjob self_service_lists.pl</p>
+                        <p>Used by the /api/v1/contrib/kohasuomi/borrowers/ssstatus -endpoint (real-time self-service access check) and block list generation cronjob self_service_lists.pl</p>
                         <p>The rules are YAML-formatted.
                             Example:
                             <pre>
@@ -93,7 +93,7 @@
                         <p>
                             Then each weekday has a list of opening hour and closing hour. If you make changes, remember to validate the YAML using https://www.yamllint.com</p>
                         <p>
-                            Trying to use the self-service REST API /api/v1/contrib/kohasuomi/patrons/ssstatus without this syspref set will make the API return with configuration errors.
+                            Trying to use the self-service REST API /api/v1/contrib/kohasuomi/borrowers/ssstatus without this syspref set will make the API return with configuration errors.
                         </p>
                     </td></tr>
                     <tr><td>

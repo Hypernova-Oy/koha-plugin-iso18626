@@ -57,6 +57,7 @@ sub ss_block_delete {
             );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -89,6 +90,7 @@ sub ss_blocks_delete {
             );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -120,6 +122,7 @@ sub ss_block_get {
             );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -151,6 +154,7 @@ sub ss_block_has {
             );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -183,6 +187,7 @@ sub ss_blocks_list {
             );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -221,6 +226,7 @@ sub ss_blocks_post {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -259,6 +265,7 @@ sub ss_blocks_put {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -270,6 +277,7 @@ sub ss_blocks_put {
 ########################################################################################################################
 
 sub status {
+    my $logger = Koha::Logger->get();
     my $c = shift->openapi->valid_input or return;
 
     my $username = $c->validation->param('uname');
@@ -337,6 +345,7 @@ sub status {
                 );
             }
             else {
+                $logger->error($_);
                 return $c->render(
                     status  => 500,
                     openapi => { error => "Something went wrong, check the logs." }
@@ -344,6 +353,7 @@ sub status {
             }
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }
@@ -353,12 +363,17 @@ sub status {
 }
 
 sub get_self_service_status {
+    my $logger = Koha::Logger->get();
     my $c = shift->openapi->valid_input or return;
 
     my $payload;
     try {
-        my $patron = Koha::Patrons->cast($c->validation->param('cardnumber'));
+        #This is the Koha-way :(
+        my $patron = Koha::Patrons->find({cardnumber => $c->validation->param('cardnumber')});
+        $patron = Koha::Patrons->find({userid => $c->validation->param('cardnumber')}) unless $patron;
+
         my $branchcode = $c->validation->param('branchcode') || $c->stash('koha.user')->branchcode;
+
         Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($patron, $branchcode, 'accessMainDoor');
         #If we didn't get any exceptions, we succeeded
         $payload = {permission => Mojo::JSON->true};
@@ -402,6 +417,7 @@ sub get_self_service_status {
             return $c->render( status => 501, openapi => { error => "$_" } );
         }
         else {
+            $logger->error($_);
             return $c->render(
                 status  => 500,
                 openapi => { error => "Something went wrong, check the logs." }

@@ -31,6 +31,7 @@ use Test::Mojo;
 
 use t::lib::TestBuilder;
 use t::lib::Mocks;
+use t::db_dependent::Util qw(build_patron);
 use Mojo::Cookie::Request;
 
 use Koha::Database;
@@ -39,6 +40,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 
 my $schema = Koha::Database->schema;
 my $builder = t::lib::TestBuilder->new;
+$t::db_dependent::Util::builder = $builder;
 
 my $t = Test::Mojo->new('Koha::REST::V1');
 t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
@@ -55,24 +57,24 @@ subtest "List/GET blocks when there are no blocks to list" => sub {
         ]
     });
 
-    $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
+    $t->get_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'List: No permission');
 
 
-    $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+    $t->get_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('404')
       ->json_like('/error', qr/No self-service blocks/,
         "No self-service blocks (allow-owner access)");
 
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('404')
       ->json_like('/error', qr/No self-service blocks/,
         "No self-service blocks");
 
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/0')
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks/0')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'GET: No permission');
 
@@ -83,7 +85,7 @@ subtest "List/GET blocks when there are no blocks to list" => sub {
         ]
     });
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/0')
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks/0')
       ->status_is('404')
       ->json_like('/error', qr/No such self-service block/,
         "No such self-service block");
@@ -110,13 +112,13 @@ subtest '/borrowers/{borrowernumber}/ssblocks POST' => sub {
         { borrowernumber => $patron->borrowernumber, branchcode => 'IPT', created_by => $librarian->borrowernumber, notes => '', },
     );
 
-    $t->post_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks' => {Accept => '*/*'} => json => $blocks[0])
+    $t->post_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks' => {Accept => '*/*'} => json => $blocks[0])
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'No permission');
 
 
     for my $i (0..$#blocks) {
-        $t->post_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$blocks[$i]->{borrowernumber}.'/ssblocks' => {Accept => '*/*'} => json => $blocks[$i])
+        $t->post_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$blocks[$i]->{borrowernumber}.'/ssblocks' => {Accept => '*/*'} => json => $blocks[$i])
           ->status_is('200');
         print($t->tx->res->body);
     
@@ -128,7 +130,7 @@ subtest '/borrowers/{borrowernumber}/ssblocks POST' => sub {
         plan tests => 3;
 
         push(@blocks, { borrowernumber => $patron->borrowernumber, branchcode => 'CPL', notes => '<<script></script>script>...</script>'});
-        $t->post_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks' => {Accept => '*/*'} => json => $blocks[3])
+        $t->post_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks' => {Accept => '*/*'} => json => $blocks[3])
           ->status_is('200')
           ->json_is('/notes', '😄😄script😆😄/script😆script😆...😄/script😆',
             "notes-field sanitated against xss");
@@ -165,7 +167,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
         $block->{'expirationdate'} = $block->{'expirationdate'}->strftime('%Y-%m-%d %H:%M:%S') if ref($block->{expirationdate}) eq 'DateTime';
     }
 
-    $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+    $t->get_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
 
     cmp_deeply(
@@ -176,7 +178,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
         ],
         "Blocked Borrower 1 has two blocks");
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('200');
 
     cmp_deeply(
@@ -184,7 +186,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
         [noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable($blocks[0]))],
         "Blocked Borrower 2 has one blocks");
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
 
     cmp_deeply($t->tx->res->json, noclass(Koha::Plugin::Fi::KohaSuomi::SelfService::Block::get_deeply_testable($blocks[0])),
@@ -202,7 +204,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
         })),
             "Blocked Borrower 1 is given an expired block");
 
-        $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+        $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
           ->status_is('200');
     
         cmp_deeply(
@@ -217,7 +219,7 @@ subtest "List/GET blocks when there is something to list/GET" => sub {
     $schema->storage->txn_rollback;
 };
 
-subtest '/patrons/{borrowernumber}/ssblocks DELETE' => sub {
+subtest '/borrowers/{borrowernumber}/ssblocks DELETE' => sub {
     plan tests => 15;
 
     $schema->storage->txn_begin;
@@ -240,30 +242,30 @@ subtest '/patrons/{borrowernumber}/ssblocks DELETE' => sub {
         );
     }
 
-    $t->delete_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks')
+    $t->delete_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks')
       ->status_is('403')
       ->json_like('/error', qr/Missing required permission/, 'No permission');
 
 
-    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
 
     cmp_deeply($t->tx->res->json, {deleted_count => 2},
         "Deleted all Blocks and deleted_count is as expected");
 
-    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks')
+    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks')
       ->status_is('200');
 
     cmp_deeply($t->tx->res->json, {deleted_count => 0},
         "Deleted all Blocks and deleted_count is zero");
 
-    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
+    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
 
     cmp_deeply($t->tx->res->json, {deleted_count => 1},
         "Deleted a single Block and deleted_count is 1");
 
-    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
+    $t->delete_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks/'.$blocks[0]->{borrower_ss_block_id})
       ->status_is('200');
 
     cmp_deeply($t->tx->res->json, {deleted_count => 0},
@@ -291,7 +293,7 @@ subtest "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}" => sub {
     })),
         "Given a simple block has been given");
 
-    $t->get_ok($host . '/api/v1/contrib/kohasuomi/patrons/'.$patron->borrowernumber.'/ssblocks/hasblock/'.'CPL')
+    $t->get_ok($host . '/api/v1/contrib/kohasuomi/borrowers/'.$patron->borrowernumber.'/ssblocks/hasblock/'.'CPL')
       ->status_is('200');
 
     cmp_deeply(
@@ -301,7 +303,7 @@ subtest "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}" => sub {
             branchcode => 'CPL',})),
         "Borrower is blocked to branch CPL");
 
-    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/patrons/'.$librarian->borrowernumber.'/ssblocks/hasblock/'.'IPT')
+    $t->get_ok($librarian_host . '/api/v1/contrib/kohasuomi/borrowers/'.$librarian->borrowernumber.'/ssblocks/hasblock/'.'IPT')
       ->status_is('204');
 
     cmp_deeply(
@@ -310,42 +312,5 @@ subtest "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}" => sub {
 
     $schema->storage->txn_rollback;
 };
-
-sub build_patron {
-    my ($params) = @_;
-
-    my $flag = $params->{flags} ? 2 ** $params->{flags} : undef;
-    my $patron = $builder->build_object(
-        {
-            class => 'Koha::Patrons',
-            value => {
-                gonenoaddress   => 0,
-                lost            => 0,
-                debarred        => undef,
-                debarredcomment => undef,
-                branchcode => 'FPL',
-                flags => $flag
-            }
-        }
-    );
-    my $password = 'thePassword123';
-    $patron->set_password( { password => $password, skip_validation => 1 } );
-    $patron->userid('u' . $patron->borrowernumber)->store;
-    my $userid = $patron->userid;
-
-    foreach my $permission (@{$params->{permissions}}) {
-        my $dbh   = C4::Context->dbh;
-        $dbh->do( "
-            INSERT INTO user_permissions (borrowernumber,module_bit,code)
-            VALUES (?,?,?)", undef,
-            $patron->borrowernumber,
-            $permission->{module},
-            $permission->{subpermission}
-        );
-    }
-
-    return ($patron, "//$userid:$password@");
-}
-
 
 1;

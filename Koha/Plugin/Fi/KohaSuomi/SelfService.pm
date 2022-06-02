@@ -52,17 +52,17 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage;
 
-our $VERSION = "{VERSION}";
+our $VERSION = "1.0.0";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',
     author          => 'Lari Taskula',
     date_authored   => '2019-11-05',
-    date_updated    => "2019-11-05",
+    date_updated    => "2022-05-02",
     minimum_version => '19.05.00.000',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'This plugin implements Self Service Permission API for use with access control devices'
+    description     => 'This plugin implements Self Service Permission API for use with the Toveri access control device'
 };
 
 my $logger = Koha::Logger->get;

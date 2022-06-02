@@ -21,16 +21,19 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 use Modern::Perl;
 
 use C4::Context;
+use Koha::Logger;
 
 use Koha::Patron::Attributes;
 
 sub install {
     my ( $self, $args ) = @_;
+    my $logger = Koha::Logger->get();
 
-    # Create tables
-    my $table = $self->get_qualified_table_name('borrower_ss_blocks');
+    eval {
+        # Create tables
+        my $table = $self->get_qualified_table_name('borrower_ss_blocks');
 
-    my $borrower_ss_blocks = C4::Context->dbh->do(qq{
+        my $borrower_ss_blocks = C4::Context->dbh->do(qq{
 
 --
 -- Table structure for table `$table`
@@ -51,69 +54,43 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
   CONSTRAINT `borrower_ss_blocks_ibfk_1` FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-  });
+        });
 
-    # Create borrower attributes
-    my $sstc;
-    unless ($sstc = Koha::Patron::Attribute::Types->find({ code => 'SST&C'})) {
-        $sstc = Koha::Patron::Attribute::Type->new({
-            code => 'SST&C',
-            description => 'Self-service terms and conditions accepted',
-            opac_display => 1,
-            authorised_value_category => 'YES_NO'
-        })->store;
-    }
+        # Create borrower attributes
+        my $sstc;
+        unless ($sstc = Koha::Patron::Attribute::Types->find({ code => 'SST&C'})) {
+            $sstc = Koha::Patron::Attribute::Type->new({
+                code => 'SST&C',
+                description => 'Self-service terms and conditions accepted',
+                opac_display => 1,
+                authorised_value_category => 'YES_NO'
+            })->store;
+        }
 
-    my $ssban;
-    unless ($ssban = Koha::Patron::Attribute::Types->find({ code => 'SSBAN'})) {
-        $ssban = Koha::Patron::Attribute::Type->new({
-            code => 'SSBAN',
-            description => 'Self-service usage revoked',
-            opac_display => 1,
-            authorised_value_category => 'YES_NO'
-        })->store;
-    }
+        my $ssban;
+        unless ($ssban = Koha::Patron::Attribute::Types->find({ code => 'SSBAN'})) {
+            $ssban = Koha::Patron::Attribute::Type->new({
+                code => 'SSBAN',
+                description => 'Self-service usage revoked',
+                opac_display => 1,
+                authorised_value_category => 'YES_NO'
+            })->store;
+        }
 
-    # Create permissions
-    eval {
+        # Create permissions
         C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'get_self_service_status',   'Allow listing all self-service blocks for a Patron.');
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'ss_blocks_list',            'Allow listing all self-service blocks for a Patron.');
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'ss_blocks_get',             'Allow fetching the data of a single self-service block for a Patron.');
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'ss_blocks_create',          'Allow creating a single self-service block for a Patron.');
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'ss_blocks_edit',            'Allow editing the data of a single self-service block for a Patron.');
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-INSERT INTO permissions (module_bit, code, description) VALUES
-( 4,    'ss_blocks_delete',          'Allow deleting a single self-service block for a Patron.');
-});
-    };
+            INSERT INTO permissions (module_bit, code, description) VALUES
+            ( 4,    'get_self_service_status',   'Allow listing all self-service blocks for a Patron.'),
+            ( 4,    'ss_blocks_list',            'Allow listing all self-service blocks for a Patron.'),
+            ( 4,    'ss_blocks_get',             'Allow fetching the data of a single self-service block for a Patron.'),
+            ( 4,    'ss_blocks_create',          'Allow creating a single self-service block for a Patron.'),
+            ( 4,    'ss_blocks_edit',            'Allow editing the data of a single self-service block for a Patron.'),
+            ( 4,    'ss_blocks_delete',          'Allow deleting a single self-service block for a Patron.');
+        });
 
-    # Create system preferences
-    my $SSRules = <<YAML;
+        # Create system preferences
+        Koha::Caches->get_instance('syspref')->flush_all();
+        my $SSRules = <<YAML;
 ---
 TaC: 1
 Permission: 1
@@ -127,26 +104,23 @@ BorrowerCategories: PT S ST
 BranchBlock: 1
 YAML
 
-    $SSRules = C4::Context->set_preference('SSRules', $SSRules, 'Self-service access rules, age limit + whitelisted borrower categories', 'Text')
-        unless C4::Context->preference('SSRules');
+        $SSRules = C4::Context->set_preference('SSRules', $SSRules, 'Self-service access rules, age limit + whitelisted borrower categories', 'Text')
+            unless C4::Context->preference('SSRules');
 
-    my $OpeningHours                = defined C4::Context->preference('OpeningHours') ? 1 :
-        C4::Context->set_preference( 'OpeningHours', '', 'Define opening hours YAML', 'Textarea', '70|10' );
-    my $EncryptionConfiguration     = defined C4::Context->preference('EncryptionConfiguration') ? 1 :
-        C4::Context->set_preference( 'EncryptionConfiguration', '', 'Generic configuration for encryption', 'Textarea' );
-    my $SSBlockCleanOlderThanThis   = defined C4::Context->preference('SSBlockCleanOlderThanThis') ? 1 :
-        C4::Context->set_preference( 'SSBlockCleanOlderThanThis', '3650', 'Clean expired self-service branch-specific access blocks older than this many days. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Integer' );
-    my $SSBlockDefaultDuration      = defined C4::Context->preference('SSBlockDefaultDuration') ? 1 :
-        C4::Context->set_preference( 'SSBlockDefaultDuration', '60', 'Self-service branch-specific access block default duration. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Free' );
-
-    if ( $sstc && $ssban && $borrower_ss_blocks && $SSRules && $OpeningHours &&
-         $EncryptionConfiguration && $SSBlockCleanOlderThanThis && $SSBlockDefaultDuration )
-    {
-        return 1;
+        my $OpeningHours                = defined C4::Context->preference('OpeningHours') ? 1 :
+            C4::Context->set_preference( 'OpeningHours', '', 'Define opening hours YAML', 'Textarea', '70|10' );
+        my $EncryptionConfiguration     = defined C4::Context->preference('EncryptionConfiguration') ? 1 :
+            C4::Context->set_preference( 'EncryptionConfiguration', '', 'Generic configuration for encryption', 'Textarea' );
+        my $SSBlockCleanOlderThanThis   = defined C4::Context->preference('SSBlockCleanOlderThanThis') ? 1 :
+            C4::Context->set_preference( 'SSBlockCleanOlderThanThis', '3650', 'Clean expired self-service branch-specific access blocks older than this many days. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Integer' );
+        my $SSBlockDefaultDuration      = defined C4::Context->preference('SSBlockDefaultDuration') ? 1 :
+            C4::Context->set_preference( 'SSBlockDefaultDuration', '60', 'Self-service branch-specific access block default duration. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Free' );
+    };
+    if ($@) {
+        $logger->fatal("Installing koha-plugin-self-service failed: $@");
+        die $@;
     }
-    else {
-        return 0;
-    }
+    return 1;
 }
 
 sub upgrade {
@@ -160,54 +134,37 @@ sub upgrade {
 
 sub uninstall {
     my ( $self, $args ) = @_;
+    my $logger = Koha::Logger->get();
 
-    C4::Context->delete_preference( 'SSRules' );
-    C4::Context->delete_preference( 'OpeningHours' );
-    C4::Context->delete_preference( 'EncryptionConfiguration' );
-    C4::Context->delete_preference( 'SSBlockCleanOlderThanThis' );
-    C4::Context->delete_preference( 'SSBlockDefaultDuration' );
+    eval {
+        C4::Context->dbh->do(q{DELETE FROM systempreferences WHERE variable = 'SSRules';});
+        C4::Context->dbh->do(q{DELETE FROM systempreferences WHERE variable = 'OpeningHours';});
+        C4::Context->dbh->do(q{DELETE FROM systempreferences WHERE variable = 'EncryptionConfiguration';});
+        C4::Context->dbh->do(q{DELETE FROM systempreferences WHERE variable = 'SSBlockCleanOlderThanThis';});
+        C4::Context->dbh->do(q{DELETE FROM systempreferences WHERE variable = 'SSBlockDefaultDuration';});
 
-    # Delete borrower attributes
-    my $sstc = Koha::Patron::Attributes->find({ code => 'SST&C' });
-       $sstc->delete if defined $sstc;
-    my $ssban = Koha::Patron::Attributes->find({ code => 'SSBAN' });
-       $ssban->delete if defined $ssban;
+        # Delete borrower attributes
+        my $sstc = Koha::Patron::Attributes->find({ code => 'SST&C' });
+        $sstc->delete if defined $sstc;
+        my $ssban = Koha::Patron::Attributes->find({ code => 'SSBAN' });
+        $ssban->delete if defined $ssban;
 
-    # Delete permissions
-    eval {
-        C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'get_self_service_status';
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'ss_blocks_list';
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'ss_blocks_get';
-});
-    };
-    eval {
-        C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'ss_blocks_create';
-});
-    };
-    eval {
-      C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'ss_blocks_edit';
-});
-    };
-    eval {
-      C4::Context->dbh->do(q{
-DELETE FROM permissions WHERE code = 'ss_blocks_delete';
-});
-    };
-  
-    my $table = $self->get_qualified_table_name('borrower_ss_blocks');
+        # Delete permissions
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'get_self_service_status';});
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'ss_blocks_list';});
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'ss_blocks_get';});
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'ss_blocks_create';});
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'ss_blocks_edit';});
+        C4::Context->dbh->do(q{DELETE FROM permissions WHERE code = 'ss_blocks_delete';});
 
-    return C4::Context->dbh->do("DROP TABLE $table");
+        my $table = $self->get_qualified_table_name('borrower_ss_blocks');
+        C4::Context->dbh->do("DROP TABLE IF EXISTS $table;");
+    };
+    if ($@) {
+        $logger->fatal("Uninstalling koha-plugin-self-service failed: $@");
+        die $@;
+    }
+    return 1;
 }
 
 1;

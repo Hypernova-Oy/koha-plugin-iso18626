@@ -52,7 +52,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage;
 
-our $VERSION = "1.0.0";
+our $VERSION = "1.0.1";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',
@@ -122,6 +122,13 @@ sub configure {
     unless ( $cgi->param('save') ) {
         my $template = $self->get_template({ file => 'configure.tt' });
 
+        my $sstac = Koha::Patron::Attribute::Type->find({code => 'SST&C'});
+        my $sstac_status = 'OK';
+        $sstac_status = 'Missing' unless $sstac;
+        my $ssban = Koha::Patron::Attribute::Type->find({code => 'SSBAN'});
+        my $ssban_status = 'OK';
+        $ssban_status = 'Missing' unless $ssban;
+
         ## Grab the values we already have for our settings, if any exist
         $template->param(
             SSRules => C4::Context->preference( 'SSRules' ),
@@ -129,6 +136,8 @@ sub configure {
             EncryptionConfiguration => C4::Context->preference( 'EncryptionConfiguration' ),
             SSBlockCleanOlderThanThis => C4::Context->preference( 'SSBlockCleanOlderThanThis' ),
             SSBlockDefaultDuration => C4::Context->preference( 'SSBlockDefaultDuration' ),
+            bor_attr_sstac_status => $sstac_status,
+            bor_attr_ssban_status => $ssban_status,
         );
 
         $self->output_html( $template->output() );

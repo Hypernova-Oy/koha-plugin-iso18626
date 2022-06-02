@@ -18,13 +18,22 @@
                 <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
                 <form method="get">
                     <input type="submit" value="Save configuration" />
+                    <!-- Always pass these two parameters so the plugin system knows what to execute! -->
+                    <input type="hidden" name="class" value="[% CLASS %]"/>
+                    <input type="hidden" name="method" value="[% METHOD %]"/>
+
                 <table class="preferences">
 
                     <tr><td>
-                        <!-- Always pass these two parameters so the plugin system knows what to execute! -->
-                        <input type="hidden" name="class" value="[% CLASS %]"/>
-                        <input type="hidden" name="method" value="[% METHOD %]"/>
-
+                        <h4><a href="/cgi-bin/koha/admin/patron-attr-types.pl">Borrower extended attributes</a></h4>
+                        <p>
+                            <ul>
+                                <li>SST&C - Self-Service Terms and Conditions accepted. Has the library user accepted the terms and conditions? Status: [% bor_attr_sstac_status %]</li>
+                                <li>SSBAN - Self-Service usage banned. The user is prevented from accessing self-service resources. Status: [% bor_attr_ssban_status %]</li>
+                            </ul>
+                        </p>
+                    </td></tr>
+                    <tr><td>
                         <h4>Resource usage rules and checks</h4>
                         <p>
                             <textarea name="SSRules" value="" cols="40" rows="11">[% SSRules %]</textarea>

@@ -41,9 +41,9 @@ my $builder = t::lib::TestBuilder->new;
 $t::db_dependent::Util::builder = $builder;
 
 
-subtest("Scenario: Simple test REST API calls.", sub {
+subtest("Scenario: Simple plugin lifecycle tests.", sub {
     $schema->storage->txn_begin;
-    plan tests => 4;
+    plan tests => 5;
 
     my $plugin = Koha::Plugin::Fi::KohaSuomi::SelfService->new();
 
@@ -52,10 +52,17 @@ subtest("Scenario: Simple test REST API calls.", sub {
 
         ok($plugin->uninstall(), "Uninstalled");
     });
+
     subtest("Install the plugin", sub {
         plan tests => 1;
 
         ok($plugin->install(), "Installed");
+    });
+
+    subtest("Upgrade the plugin", sub {
+        plan tests => 1;
+
+        ok($plugin->upgrade(), "Upgraded");
     });
 
     subtest("Configure the plugin", sub {

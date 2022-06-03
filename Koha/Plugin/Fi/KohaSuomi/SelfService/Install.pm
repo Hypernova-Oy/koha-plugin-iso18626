@@ -24,6 +24,7 @@ use YAML::XS;
 
 use C4::Context;
 use Koha::Logger;
+use Koha::DateUtils;
 
 use Koha::Libraries;
 use Koha::Patron::Attributes;
@@ -213,7 +214,7 @@ sub configure {
 sub upgrade {
     my ( $self, $args ) = @_;
 
-    my $dt = dt_from_string();
+    my $dt = Koha::DateUtils::dt_from_string();
     $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
 
     return 1;

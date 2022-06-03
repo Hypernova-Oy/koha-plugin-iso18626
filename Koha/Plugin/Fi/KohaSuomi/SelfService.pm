@@ -52,7 +52,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage;
 
-our $VERSION = "1.0.1";
+our $VERSION = "1.0.2";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',
@@ -83,21 +83,15 @@ sub new {
 }
 
 sub install {
-    my ( $self, $args ) = @_;
-
-    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::install($self, $args);
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::install(@_);
 }
 
 sub uninstall {
-    my ( $self, $args ) = @_;
-
-    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::uninstall($self, $args);
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::uninstall(@_);
 }
 
 sub upgrade {
-    my ( $self, $args ) = @_;
-
-    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::upgrade($self, $args);
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::upgrade(@_);
 }
 
 sub api_routes {
@@ -116,41 +110,7 @@ sub api_namespace {
 }
 
 sub configure {
-    my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
-
-    unless ( $cgi->param('save') ) {
-        my $template = $self->get_template({ file => 'configure.tt' });
-
-        my $sstac = Koha::Patron::Attribute::Type->find({code => 'SST&C'});
-        my $sstac_status = 'OK';
-        $sstac_status = 'Missing' unless $sstac;
-        my $ssban = Koha::Patron::Attribute::Type->find({code => 'SSBAN'});
-        my $ssban_status = 'OK';
-        $ssban_status = 'Missing' unless $ssban;
-
-        ## Grab the values we already have for our settings, if any exist
-        $template->param(
-            SSRules => C4::Context->preference( 'SSRules' ),
-            OpeningHours => C4::Context->preference( 'OpeningHours' ),
-            EncryptionConfiguration => C4::Context->preference( 'EncryptionConfiguration' ),
-            SSBlockCleanOlderThanThis => C4::Context->preference( 'SSBlockCleanOlderThanThis' ),
-            SSBlockDefaultDuration => C4::Context->preference( 'SSBlockDefaultDuration' ),
-            bor_attr_sstac_status => $sstac_status,
-            bor_attr_ssban_status => $ssban_status,
-        );
-
-        $self->output_html( $template->output() );
-    }
-    else {
-        C4::Context->set_preference('SSRules', $cgi->param('SSRules'));
-        C4::Context->set_preference('OpeningHours', $cgi->param('OpeningHours'));
-        C4::Context->set_preference('EncryptionConfiguration', $cgi->param('EncryptionConfiguration'));
-        C4::Context->set_preference('SSBlockCleanOlderThanThis', $cgi->param('SSBlockCleanOlderThanThis'));
-        C4::Context->set_preference('SSBlockDefaultDuration', $cgi->param('SSBlockDefaultDuration'));
-
-        $self->go_home();
-    }
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::configure(@_);
 }
 
 =head2 CheckSelfServicePermission
@@ -464,12 +424,12 @@ sub getOpeningHours {
 sub _getOpeningHoursFromSyspref {
     my $logger = Koha::Logger->get({category => __PACKAGE__});
     my $sp = C4::Context->preference('OpeningHours');
-    Koha::Exceptions::Config->throw(error => 'System preference "OpeningHours" not set. Cannot get opening hours!')
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => 'System preference "OpeningHours" not set. Cannot get opening hours!')
         unless $sp;
     eval {
         $sp = YAML::XS::Load( $sp );
     };
-    Koha::Exceptions::Config->throw(error => 'System preference "OpeningHours" is not valid YAML. Validate it using yamllint! or '.$@)
+    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => 'System preference "OpeningHours" is not valid YAML. Validate it using yamllint! or '.$@)
         if $@;
     $logger->debug("'OpeningHours'-syspref: ".Data::Dumper::Dumper($sp)) if $logger->is_debug;
     return $sp;

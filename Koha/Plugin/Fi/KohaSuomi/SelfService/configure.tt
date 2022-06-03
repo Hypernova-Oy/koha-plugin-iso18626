@@ -73,8 +73,26 @@
 
                     <tr><td>
                         <h4>Opening hours</h4>
+                        [% IF openinghours_loop_error %]<div class="error alarm warning">Saved opening hours yaml-data is malformed. You can try to repair it yourself by fixing the <a href="/cgi-bin/koha/admin/preferences.pl?tab=&op=search&searchfield=openinghours">openinghours-syspref</a>. Error is [% openinghours_loop_error %].</div>[% END %]
+
+                        <table id="openinghours_branches_table" style="float:left;">
+                            <tr>
+                                <th>branchcode</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th>Sunday</th>
+                            </tr>
+                            [% FOREACH branch IN openinghours_loop.keys.sort %]
+                            <tr>
+                                <td>[% branch %]</td>
+                                [% FOREACH wday IN [0,1,2,3,4,5,6] %]
+                                <td>
+                                    <input type="time" name="openinghours_[% branch %]_[% wday %]_start" value="[% openinghours_loop.$branch.$wday.0 %]"/><br/>
+                                    <input type="time" name="openinghours_[% branch %]_[% wday %]_end"   value="[% openinghours_loop.$branch.$wday.1 %]"/>
+                                </td>
+                                [% END %]
+                            </tr>
+                            [% END %]
+                        </table>
                         <p>
-                            <textarea name="OpeningHours" value="" cols="40" rows="11">[% OpeningHours %]</textarea>
+                            <textarea name="OpeningHours" value="" cols="40" rows="11" disabled="disabled">[% OpeningHours %]</textarea>
                         </p>
                         <p>A gargantuan YAML list of branchcodes, weekdays and times</p>
                         <p>Example:
@@ -82,16 +100,16 @@
                             ---
 
                             CPL:
-                            - #Monday
-                            - 07:00 #Opening hour
-                            - 20:00 #Closing hour
-                            - #Tuesday
-                            - 07:00 #Opening hour
-                            - 20:00 #Closing hour
+                            #Monday
+                            - - 07:00 #Opening hour
+                              - 20:00 #Closing hour
+                            #Tuesday
+                            - - 07:00 #Opening hour
+                              - 20:00 #Closing hour
                             ...
-                            - #Sunday
-                            - 12:00 #Opening hour
-                            - 18:00 #Closing hour
+                            #Sunday
+                            - - 12:00 #Opening hour
+                              - 18:00 #Closing hour
                             FPL:
                             ...
                             </pre>

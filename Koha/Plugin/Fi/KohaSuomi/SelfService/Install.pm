@@ -20,10 +20,14 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Modern::Perl;
 
+use YAML::XS;
+
 use C4::Context;
 use Koha::Logger;
 
+use Koha::Libraries;
 use Koha::Patron::Attributes;
+use Koha::Patron::Attribute::Types;
 
 sub install {
     my ( $self, $args ) = @_;
@@ -118,6 +122,89 @@ YAML
     };
     if ($@) {
         $logger->fatal("Installing koha-plugin-self-service failed: $@");
+        die $@;
+    }
+    return 1;
+}
+
+sub configure {
+    my ($self, $args) = @_;
+    my $logger = Koha::Logger->get();
+    my $cgi = $self->{'cgi'};
+
+    eval {
+        if ( $cgi && $cgi->param('save') ) {
+            #openinghours handling
+            my $openinghours = {};
+            my @branches = Koha::Libraries->search();
+            for my $branch (@branches) {
+                for my $wday (0,1,2,3,4,5,6) {
+                    $openinghours->{$branch->branchcode} = [] unless $openinghours->{$branch->branchcode};
+                    $openinghours->{$branch->branchcode}->[$wday] = [] unless $openinghours->{$branch->branchcode}->[$wday];
+                    $openinghours->{$branch->branchcode}->[$wday]->[0] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_start");
+                    $openinghours->{$branch->branchcode}->[$wday]->[1] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_end");
+                }
+            }
+            C4::Context->set_preference('OpeningHours', YAML::XS::Dump($openinghours));
+
+
+            C4::Context->set_preference('SSRules', $cgi->param('SSRules'));
+            C4::Context->set_preference('EncryptionConfiguration', $cgi->param('EncryptionConfiguration'));
+            C4::Context->set_preference('SSBlockCleanOlderThanThis', $cgi->param('SSBlockCleanOlderThanThis'));
+            C4::Context->set_preference('SSBlockDefaultDuration', $cgi->param('SSBlockDefaultDuration'));
+
+            $self->go_home();
+        }
+        else {
+            #prepare the openinghours editor
+            my @branches = Koha::Libraries->search();
+            my $openinghours = C4::Context->preference('OpeningHours');
+            my $openinghours_loop = {};
+            my $openinghours_loop_error;
+            if ($openinghours) {
+                eval {
+                    $openinghours = YAML::XS::Load( $openinghours );
+                };
+                if ($@) {
+                    $openinghours_loop_error = $@;
+                    $openinghours = {};
+                }
+            } else {
+                $openinghours = {};
+            }
+            for my $branch (@branches) {
+                #remove branches that might no longer exists from the configuration
+                $openinghours_loop->{$branch->branchcode} = $openinghours->{$branch->branchcode} || {};
+            }
+
+
+            my $sstac = Koha::Patron::Attribute::Types->find({code => 'SST&C'});
+            my $sstac_status = 'OK';
+            $sstac_status = 'Missing' unless $sstac;
+            my $ssban = Koha::Patron::Attribute::Types->find({code => 'SSBAN'});
+            my $ssban_status = 'OK';
+            $ssban_status = 'Missing' unless $ssban;
+
+            ## Grab the values we already have for our settings, if any exist
+            my $template = $self->get_template({ file => 'configure.tt' });
+            $template->param(
+                SSRules => C4::Context->preference( 'SSRules' ),
+                OpeningHours => C4::Context->preference( 'OpeningHours' ),
+                EncryptionConfiguration => C4::Context->preference( 'EncryptionConfiguration' ),
+                SSBlockCleanOlderThanThis => C4::Context->preference( 'SSBlockCleanOlderThanThis' ),
+                SSBlockDefaultDuration => C4::Context->preference( 'SSBlockDefaultDuration' ),
+                bor_attr_sstac_status => $sstac_status,
+                bor_attr_ssban_status => $ssban_status,
+
+                openinghours_loop => $openinghours_loop,
+                openinghours_loop_error => $openinghours_loop_error,
+            );
+
+            $self->output_html( $template->output() );
+        }
+    };
+    if ($@) {
+        $logger->error("Configuring koha-plugin-self-service failed: $@");
         die $@;
     }
     return 1;

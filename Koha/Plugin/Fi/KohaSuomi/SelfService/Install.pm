@@ -30,6 +30,8 @@ use Koha::Libraries;
 use Koha::Patron::Attributes;
 use Koha::Patron::Attribute::Types;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours;
+
 sub install {
     my ( $self, $args ) = @_;
     my $logger = Koha::Logger->get();
@@ -142,12 +144,11 @@ sub configure {
                 for my $wday (0,1,2,3,4,5,6) {
                     $openinghours->{$branch->branchcode} = [] unless $openinghours->{$branch->branchcode};
                     $openinghours->{$branch->branchcode}->[$wday] = [] unless $openinghours->{$branch->branchcode}->[$wday];
-                    $openinghours->{$branch->branchcode}->[$wday]->[0] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_start");
-                    $openinghours->{$branch->branchcode}->[$wday]->[1] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_end");
+                    $openinghours->{$branch->branchcode}->[$wday]->[0] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_start") || '00:00';
+                    $openinghours->{$branch->branchcode}->[$wday]->[1] = $cgi->param("openinghours_".$branch->branchcode."_".$wday."_end") || '00:00';
                 }
             }
             C4::Context->set_preference('OpeningHours', YAML::XS::Dump($openinghours));
-
 
             C4::Context->set_preference('SSRules', $cgi->param('SSRules'));
             C4::Context->set_preference('EncryptionConfiguration', $cgi->param('EncryptionConfiguration'));
@@ -177,6 +178,9 @@ sub configure {
                 #remove branches that might no longer exists from the configuration
                 $openinghours_loop->{$branch->branchcode} = $openinghours->{$branch->branchcode} || {};
             }
+            unless ($openinghours_loop_error) {
+                $openinghours_loop_error = Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours::validate($openinghours);
+            }
 
 
             my $sstac = Koha::Patron::Attribute::Types->find({code => 'SST&C'});
@@ -199,6 +203,8 @@ sub configure {
 
                 openinghours_loop => $openinghours_loop,
                 openinghours_loop_error => $openinghours_loop_error,
+
+                plugin_version => $Koha::Plugin::Fi::KohaSuomi::SelfService::VERSION,
             );
 
             $self->output_html( $template->output() );

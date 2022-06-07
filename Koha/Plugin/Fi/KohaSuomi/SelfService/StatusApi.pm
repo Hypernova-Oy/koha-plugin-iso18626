@@ -26,9 +26,13 @@ use C4::Members;
 use Scalar::Util qw( blessed );
 use Try::Tiny;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BlockManager;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Log;
+
+use Koha::Exceptions::Patron;
+use Koha::Exceptions::Library::NotFound;
 
 =head2 borrower_ss_blocks -feature
 =cut
@@ -371,8 +375,11 @@ sub get_self_service_status {
         #This is the Koha-way :(
         my $patron = Koha::Patrons->find({cardnumber => $c->validation->param('cardnumber')});
         $patron = Koha::Patrons->find({userid => $c->validation->param('cardnumber')}) unless $patron;
+        Koha::Exceptions::Patron->throw(error => "No Patron with the given cardnumber '".$c->validation->param('cardnumber')."' found.") unless $patron;
 
         my $branchcode = $c->validation->param('branchcode') || $c->stash('koha.user')->branchcode;
+        my $library = Koha::Libraries->find({branchcode => $branchcode});
+        Koha::Exceptions::Library::NotFound->throw(error => "No Library with branchcode '$branchcode' found.") unless $library;
 
         Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($patron, $branchcode, 'accessMainDoor');
         #If we didn't get any exceptions, we succeeded
@@ -415,6 +422,88 @@ sub get_self_service_status {
         }
         elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
             return $c->render( status => 501, openapi => { error => "$_" } );
+        }
+        else {
+            $logger->error($_);
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
+    };
+}
+
+sub list_openingHours {
+    my $logger = Koha::Logger->get();
+    my $c = shift->openapi->valid_input or return;
+
+    my $payload;
+    try {
+        my $openinghours = YAML::XS::Load( C4::Context->preference('OpeningHours') );
+        my $err = Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours::validate($openinghours);
+
+        if ($err) {
+            my $error = join("\n", @$err);
+            $logger->error("Validating the OpeningHours-syspref failed. Use the plugin's configuration tool to fix errors.\n".$error);
+            $openinghours->{error} = $error;
+            $payload = $openinghours;
+            return $c->render(status => 501, openapi => $payload);
+        }
+        else {
+            $payload = $openinghours;
+            return $c->render(status => 200, openapi => $payload);
+        }
+    } catch {
+        if (not(blessed($_) && $_->can('rethrow'))) {
+            $logger->error($_);
+            return $c->render( status => 500, openapi => { error => "$_" } );
+        }
+        else {
+            $logger->error($_);
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
+    };
+}
+
+sub get_openingHours {
+    my $logger = Koha::Logger->get();
+    my $c = shift->openapi->valid_input or return;
+
+    my $payload;
+    try {
+        if ($c->stash('koha.user') && $c->stash('koha.user')->branchcode) {
+            my $branchcode = $c->stash('koha.user')->branchcode;
+            my $openinghours = YAML::XS::Load( C4::Context->preference('OpeningHours') );
+            my $err = Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours::validate($openinghours);
+
+            if ($err) {
+                my $error = join("\n", @$err);
+                $logger->error("Validating the OpeningHours-syspref failed. Use the plugin's configuration tool to fix errors.\n".$error);
+                $openinghours->{error} = $error;
+                $payload = $openinghours;
+                return $c->render(status => 501, openapi => $payload);
+            }
+            else {
+                $payload = $openinghours->{$branchcode};
+                if ($payload) {
+                    return $c->render(status => 200, openapi => $payload);
+                }
+                else {
+                    return $c->render(status => 404, openapi => {error => "No opening hours defined for branch '$branchcode'"});
+                }
+            }
+        }
+        else {
+            $payload = {error => "API user must be authenticated to get the Library whose opening hours are needed."};
+            return $c->render(status => 401, openapi => $payload);
+        }
+    } catch {
+        if (not(blessed($_) && $_->can('rethrow'))) {
+            $logger->error($_);
+            return $c->render( status => 500, openapi => { error => "$_" } );
         }
         else {
             $logger->error($_);

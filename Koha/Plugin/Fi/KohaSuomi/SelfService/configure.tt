@@ -14,7 +14,7 @@
         <div class="col-sm-10 col-sm-push-2">
             <main>
                 <!-- We can access our own plugins resource files using the PLUGIN_PATH variable. -->
-                <h3>Self Service API: Configuration</h3>
+                <h3>Self Service API: Configuration - v[% plugin_version %]</h3>
                 <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
                 <form method="get">
                     <input type="submit" value="Save configuration" />

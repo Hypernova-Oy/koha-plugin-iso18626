@@ -23,7 +23,7 @@ my $startOfWeek = ($weekday > 1) ? $now->clone->subtract(days => $weekday-1) : $
 my $schema  = Koha::Database->new->schema;
 $schema->storage->txn_begin;
 
-my $hours = t::db_dependent::opening_hours_context::createContext;
+my $hours = t::db_dependent::opening_hours_context::createContextWithErrors;
 
 subtest 'Opening hours happy path' => sub {
     C4::Context->set_preference("OpeningHours",$hours);

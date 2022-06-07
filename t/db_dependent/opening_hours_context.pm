@@ -135,9 +135,9 @@ sub createContext {
 "  -",
 "    - 10:00",
 "    - 18:00",
-#"  -", #Sunday is missing, we throw an exception
-#"    - 12:00",
-#"    - 16:00",
+"  -",
+"    - 12:00",
+"    - 16:00",
 "UPL:",
 "  -", #Monday
 "    - 07:00", #Opening time is bigger than the closing time
@@ -185,6 +185,11 @@ sub createContext {
 "",);
 
     return $hours;
+}
+
+sub createContextWithErrors {
+  my $hours = createContext();
+  delete $hours->{IPT}->[6]; #Sunday is missing, we throw an exception
 }
 
 

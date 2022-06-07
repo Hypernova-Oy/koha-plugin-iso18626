@@ -47,10 +47,11 @@ t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
 
 subtest("Scenario: Simple test REST API calls.", sub {
     $schema->storage->txn_begin;
-    plan tests => 4;
+    plan tests => 6;
 
     my ($patron, $host) = build_patron({
         permissions => [],
+        branchcode => 'IPT',
     });
     my ($librarian, $librarian_host) = build_patron({
         permissions => [
@@ -85,7 +86,6 @@ subtest("Scenario: Simple test REST API calls.", sub {
         ok(1, "Step ok");
     });
 
-
     subtest "GET /borrowers/ssstatus, terms and conditions not accepted." => sub {
         plan tests => 7;
 
@@ -113,6 +113,50 @@ subtest("Scenario: Simple test REST API calls.", sub {
         ->status_is('200')
         ->json_like('/permission', qr/0/, "Permission denied")
         ->json_like('/error', qr/Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory/);
+    });
+
+    subtest("GET /selfservice/openinghours", sub {
+        plan tests => 6;
+
+        $t->get_ok($host.'/api/v1/contrib/kohasuomi/selfservice/openinghours')
+        ->status_is('200')
+        ->json_like('/CPL/0/0', qr/^\d\d:\d\d$/, 'CPL->Monday->Start')
+        ->json_like('/CPL/0/1', qr/^\d\d:\d\d$/, 'CPL->Monday->End')
+        ->json_like('/CPL/6/0', qr/^\d\d:\d\d$/, 'CPL->Sunday->Start')
+        ->json_like('/CPL/6/1', qr/^\d\d:\d\d$/, 'CPL->Sunday->End');
+    });
+
+    subtest("GET /selfservice/openinghours with errors", sub {
+        plan tests => 6;
+
+        my $old_pref = C4::Context->preference('OpeningHours');
+        ok(C4::Context->set_preference('OpeningHours', '123 {asd: fff} 543'), "Break the OpeningHours-preference");
+
+        $t->get_ok($host.'/api/v1/contrib/kohasuomi/selfservice/openinghours')
+        ->status_is('501')
+        ->json_like('/error', qr/^Branchcode/, 'Error description received')
+        ->json_like('/123 {asd', qr/fff/, 'Broken openinghours forwarded');
+
+        ok(C4::Context->set_preference('OpeningHours', $old_pref), "Revert the old OpeningHours-preference");
+    });
+
+    subtest("GET /selfservice/openinghours/self", sub {
+        plan tests => 12;
+
+        $t->get_ok('///api/v1/contrib/kohasuomi/selfservice/openinghours/self')
+        ->status_is('401')
+        ->json_like('/error', qr/must be authenticated/, 'API user must be authenticated');
+
+        $t->get_ok($librarian_host.'/api/v1/contrib/kohasuomi/selfservice/openinghours/self')
+        ->status_is('404')
+        ->json_like('/error', qr/No opening hours defined for.+?FPL/, 'No Opening Hours defined for logged in user\'s branch');
+
+        $t->get_ok($host.'/api/v1/contrib/kohasuomi/selfservice/openinghours/self')
+        ->status_is('200')
+        ->json_like('/0/0', qr/^07:00$/, 'IPT->Monday->Start')
+        ->json_like('/0/1', qr/^20:00$/, 'IPT->Monday->End')
+        ->json_like('/6/0', qr/^12:00$/, 'IPT->Sunday->Start')
+        ->json_like('/6/1', qr/^16:00$/, 'IPT->Sunday->End');
     });
 
     $schema->storage->txn_rollback;

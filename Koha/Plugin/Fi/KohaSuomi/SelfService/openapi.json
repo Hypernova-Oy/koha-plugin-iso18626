@@ -319,7 +319,7 @@
           "description": "No such self-service block"
         },
         "401": {
-          "description": "Unauthorized",
+          "description": "Unauthenticated",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }
@@ -441,6 +441,80 @@
         },
         "404": {
           "description": "No such barcode in use",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "501": {
+          "description": "Feature not configured properly. Notify the API maintainer.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Unexpected exception happened?!??.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      }
+    }
+  },
+  "/selfservice/openinghours": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#list_openingHours",
+      "operationId": "listOpeningHours",
+      "tags": ["self_service", "openinghours"],
+      "summary": "Check the opening hours of our self-service resources",
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "",
+          "schema": {
+            "$ref": "openapi/definitions.json#/selfServiceAllOpeningHours"
+          }
+        },
+        "501": {
+          "description": "Feature not configured properly. Notify the API maintainer.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "500": {
+          "description": "Unexpected exception happened?!??.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      }
+    }
+  },
+  "/selfservice/openinghours/self": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#get_openingHours",
+      "operationId": "getOpeningHours",
+      "tags": ["self_service", "openinghours"],
+      "summary": "Check the opening hours of the logged in self-service resources API user. Uses the user accounts homebranch-field to get the opening hours for.",
+      "produces": [
+        "application/json"
+      ],
+      "responses": {
+        "200": {
+          "description": "",
+          "schema": {
+            "$ref": "openapi/definitions.json#/selfServiceOpeningHours"
+          }
+        },
+        "401": {
+          "description": "User is not authenticated.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        },
+        "404": {
+          "description": "No opening hours defined for the logged in user's branch.",
           "schema": {
             "$ref": "openapi/definitions.json#/error"
           }

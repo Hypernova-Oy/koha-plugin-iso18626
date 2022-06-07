@@ -47,9 +47,9 @@ t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
 
 subtest("Scenario: Simple test REST API calls.", sub {
     $schema->storage->txn_begin;
-    plan tests => 6;
+    plan tests => 8;
 
-    my ($patron, $host) = build_patron({
+    my ($patron, $host, $patronPassword) = build_patron({
         permissions => [],
         branchcode => 'IPT',
     });
@@ -85,6 +85,27 @@ subtest("Scenario: Simple test REST API calls.", sub {
         Koha::Caches->get_instance()->clear_from_cache('SSRules');
         ok(1, "Step ok");
     });
+
+    subtest "GET /selfservice/pincheck" => sub {
+        plan tests => 13;
+
+        $t->get_ok($host.'/api/v1/contrib/kohasuomi/selfservice/pincheck' => json => {cardnumber => $patron->userid, password => $patronPassword})
+        ->status_is('403')
+        ->json_like('/error', qr/Missing required permission/, 'Missing required permission');
+
+        $t->get_ok($librarian_host.'/api/v1/contrib/kohasuomi/selfservice/pincheck' => json => {cardnumber => $patron->userid, password => $patronPassword})
+        ->status_is('200')
+        ->json_like('/permission', qr/1/, "Permission denied");
+
+        $t->get_ok($librarian_host.'/api/v1/contrib/kohasuomi/selfservice/pincheck' => json => {cardnumber => $patron->userid, password => '1234'})
+        ->status_is('200')
+        ->json_like('/permission', qr/0/, "Permission denied")
+        ->json_like('/error', qr/Wrong password/);
+
+        $t->get_ok($librarian_host.'/api/v1/contrib/kohasuomi/selfservice/pincheck' => json => {cardnumber => 'this-not-exists', password => $patronPassword})
+        ->status_is('404')
+        ->json_like('/error', qr/cardnumber/, "No such cardnumber");
+    };
 
     subtest "GET /borrowers/ssstatus, terms and conditions not accepted." => sub {
         plan tests => 7;
@@ -164,7 +185,6 @@ subtest("Scenario: Simple test REST API calls.", sub {
 
 sub prepareBasicAuthHeader {
     my ($username, $password) = @_;
-    print "HELLO!\n";
     return 'Basic '.MIME::Base64::encode($username.':'.$password, '');
 }
 

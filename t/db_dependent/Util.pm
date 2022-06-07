@@ -46,7 +46,7 @@ sub build_patron {
         );
     }
 
-    return ($patron, "//$userid:$password@");
+    return ($patron, "//$userid:$password@", $password);
 }
 
 

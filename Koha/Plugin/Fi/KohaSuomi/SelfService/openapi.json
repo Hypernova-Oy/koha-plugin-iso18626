@@ -533,5 +533,59 @@
         }
       }
     }
+  },
+  "/selfservice/pincheck": {
+    "get": {
+      "x-mojo-to": "Fi::KohaSuomi::SelfService::StatusApi#get_PINCheck",
+      "x-koha-authorization": {
+        "permissions": {
+          "borrowers": "get_self_service_status"
+        }
+      },
+      "operationId": "getPINCheck",
+      "tags": ["self_service", "auth"],
+      "summary": "Check the self-service PIN and cardnumber.",
+      "produces": [
+        "application/json"
+      ],
+      "parameters": [
+        {
+          "name": "body",
+          "description": "The Username the Borrower uses to authenticate",
+          "in": "body",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "cardnumber": {
+                "description": "User's cardnumber or username",
+                "type": ["string"]
+              },
+              "password": {
+                "type": "string",
+                "format": "password",
+                "description": "The user's password'"
+              }
+            },
+            "required": ["cardnumber", "password"]
+          }
+        }
+      ],
+      "consumes": ["application/json"],
+      "responses": {
+        "200": {
+          "description": "",
+          "schema": {
+            "$ref": "openapi/definitions.json#/borrowerSelfServiceStatus"
+          }
+        },
+        "404": {
+          "description": "No such user cardnumber or username found.",
+          "schema": {
+            "$ref": "openapi/definitions.json#/error"
+          }
+        }
+      }
+    }
   }
 }

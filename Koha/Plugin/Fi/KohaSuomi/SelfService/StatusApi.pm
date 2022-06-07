@@ -515,6 +515,47 @@ sub get_openingHours {
     };
 }
 
+sub get_PINCheck {
+    my $logger = Koha::Logger->get();
+    my $c = shift->openapi->valid_input or return;
+
+    my $payload;
+    try {
+        my $cardnumber = $c->validation->param('body')->{cardnumber};
+        my $sth = C4::Context->dbh()->prepare("SELECT password FROM borrowers WHERE userid = ? OR cardnumber = ?");
+        $sth->execute($cardnumber, $cardnumber);
+        my ($storedPasswordHash) = $sth->fetchrow();
+
+        unless ($storedPasswordHash) {
+            $payload = {error => "No user for cardnumber '$cardnumber'"};
+            return $c->render(status => 404, openapi => $payload);
+        }
+
+        if (C4::Auth::checkpw_hash($c->validation->param('body')->{password}, $storedPasswordHash)) {
+            $payload = {permission => Mojo::JSON->true};
+        }
+        else {
+            $payload = {
+                permission => Mojo::JSON->false,
+                error => "Wrong password."
+            };
+        }
+        return $c->render(status => 200, openapi => $payload);
+    } catch {
+        if (not(blessed($_) && $_->can('rethrow'))) {
+            $logger->error($_);
+            return $c->render( status => 500, openapi => { error => "$_" } );
+        }
+        else {
+            $logger->error($_);
+            return $c->render(
+                status  => 500,
+                openapi => { error => "Something went wrong, check the logs." }
+            );
+        }
+    };
+}
+
 sub _bool {
     return $_[0] ? Mojo::JSON->true : Mojo::JSON->false;
 }

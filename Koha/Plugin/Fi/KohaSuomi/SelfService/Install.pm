@@ -20,6 +20,7 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Modern::Perl;
 
+use Data::Dumper;
 use YAML::XS;
 
 use C4::Context;
@@ -37,10 +38,11 @@ sub install {
     my $logger = Koha::Logger->get();
 
     eval {
+        my $dbh = C4::Context->dbh;
         # Create tables
         my $table = $self->get_qualified_table_name('borrower_ss_blocks');
 
-        my $borrower_ss_blocks = C4::Context->dbh->do(qq{
+        my $borrower_ss_blocks = $dbh->do(qq{
 
 --
 -- Table structure for table `$table`
@@ -55,12 +57,11 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
   `created_by` int(11) NOT NULL,        -- The librarian that created the block, referential integrity enforced with Perl, because the librarian can quit, but all the blocks he/she made must remain.
   `created_on` datetime NOT NULL DEFAULT NOW(), -- When was this block created
   PRIMARY KEY  (`borrower_ss_block_id`),
-  KEY `branchcode` (`branchcode`),
   KEY `expirationdate` (`expirationdate`),
   KEY `created_by` (`created_by`),
-  CONSTRAINT `borrower_ss_blocks_ibfk_1` FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (`borrowernumber`) REFERENCES `borrowers` (`borrowernumber`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`branchcode`) REFERENCES `branches` (`branchcode`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
         });
 
         # Create borrower attributes
@@ -85,8 +86,8 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
         }
 
         # Create permissions
-        C4::Context->dbh->do(q{
-            INSERT INTO permissions (module_bit, code, description) VALUES
+        $dbh->do(q{
+            INSERT IGNORE INTO permissions (module_bit, code, description) VALUES
             ( 4,    'get_self_service_status',   'Allow listing all self-service blocks for a Patron.'),
             ( 4,    'ss_blocks_list',            'Allow listing all self-service blocks for a Patron.'),
             ( 4,    'ss_blocks_get',             'Allow fetching the data of a single self-service block for a Patron.'),
@@ -94,6 +95,8 @@ CREATE TABLE IF NOT EXISTS `$table` ( -- borrower self-service branch-specific b
             ( 4,    'ss_blocks_edit',            'Allow editing the data of a single self-service block for a Patron.'),
             ( 4,    'ss_blocks_delete',          'Allow deleting a single self-service block for a Patron.');
         });
+        my $warnings = $dbh->selectall_arrayref('SHOW WARNINGS');
+        $logger->error("Warnings adding permissions to Koha:\n".Data::Dumper::Dumper($warnings)) if ($warnings && ref($warnings) eq 'ARRAY' && scalar(@$warnings) > 0);
 
         # Create system preferences
         Koha::Caches->get_instance('syspref')->flush_all();

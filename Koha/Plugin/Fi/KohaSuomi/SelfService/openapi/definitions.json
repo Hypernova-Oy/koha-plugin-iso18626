@@ -1,7 +1,4 @@
 {
-  "borrowerStatus": {
-    "$ref": "definitions/borrowerstatus.json"
-  },
   "borrowerSelfServiceStatus": {
     "$ref": "definitions/borrowerSelfServiceStatus.json"
   },

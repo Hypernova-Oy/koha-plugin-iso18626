@@ -25,6 +25,7 @@ sub build_patron {
                 lost            => 0,
                 debarred        => undef,
                 debarredcomment => undef,
+                dateofbirth     => '2000-01-01',
                 branchcode => $params->{branchcode} || 'FPL',
                 flags => $flag
             }

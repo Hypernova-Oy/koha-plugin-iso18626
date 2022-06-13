@@ -300,6 +300,7 @@ sub get_self_service_status {
 
     } catch {
         if (not(blessed($_) && $_->can('rethrow'))) {
+            $logger->error($_);
             return $c->render( status => 500, openapi => { error => "$_" } );
         }
         elsif (blessed($_) && $_->isa('Koha::Exceptions::Patron')) {
@@ -325,15 +326,16 @@ sub get_self_service_status {
             $payload->{expirationdate} = $_->{expirationdate} if $_->{expirationdate};
             return $c->render( status => 200, openapi => $payload );
         }
+        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
+            $logger->error($_);
+            return $c->render( status => 501, openapi => { error => "$_" } );
+        }
         elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception')) {
             $payload = {
                 permission => Mojo::JSON->false,
                 error => ref($_),
             };
             return $c->render( status => 200, openapi => $payload );
-        }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
-            return $c->render( status => 501, openapi => { error => "$_" } );
         }
         else {
             $logger->error($_);

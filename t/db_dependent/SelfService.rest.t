@@ -47,7 +47,7 @@ t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
 
 subtest("Scenario: Simple test REST API calls.", sub {
     $schema->storage->txn_begin;
-    plan tests => 8;
+    plan tests => 11;
 
     my ($patron, $host, $patronPassword) = build_patron({
         permissions => [],
@@ -134,6 +134,35 @@ subtest("Scenario: Simple test REST API calls.", sub {
         ->status_is('200')
         ->json_like('/permission', qr/0/, "Permission denied")
         ->json_like('/error', qr/Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory/);
+    });
+
+    subtest("GET /borrowers/ssstatus, OK, categorycode changed", sub {
+        plan tests => 4;
+
+        ok($patron->categorycode('PT')->store(), "Categorycode changed for the end-user");
+
+        # GET Request with formdata body. Test::Mojo clobbers formdata to query params no matter what. So we cheat it a bit here.
+        $t->post_ok($librarian_host.'/api/v1/contrib/kohasuomi/borrowers/ssstatus' => form => {cardnumber => $patron->userid(), branchcode => 'IPT'})
+        ->status_is('200')
+        ->json_like('/permission', qr/1/, "Permission granted");
+    });
+
+    subtest("GET /borrowers/ssstatus, bad library", sub {
+        plan tests => 3;
+
+        # GET Request with formdata body. Test::Mojo clobbers formdata to query params no matter what. So we cheat it a bit here.
+        $t->post_ok($librarian_host.'/api/v1/contrib/kohasuomi/borrowers/ssstatus' => form => {cardnumber => $patron->userid(), branchcode => '555'})
+        ->status_is('404')
+        ->json_like('/error', qr/No Library.+?555/, "No such library");
+    });
+
+    subtest("GET /borrowers/ssstatus, bad card", sub {
+        plan tests => 3;
+
+        # GET Request with formdata body. Test::Mojo clobbers formdata to query params no matter what. So we cheat it a bit here.
+        $t->post_ok($librarian_host.'/api/v1/contrib/kohasuomi/borrowers/ssstatus' => form => {cardnumber => 'not-exists', branchcode => 'IPT'})
+        ->status_is('404')
+        ->json_like('/error', qr/No.+?not-exists/, "No such card");
     });
 
     subtest("GET /selfservice/openinghours", sub {

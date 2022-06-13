@@ -118,7 +118,7 @@ YAML
             unless C4::Context->preference('SSRules');
 
         my $OpeningHours                = defined C4::Context->preference('OpeningHours') ? 1 :
-            C4::Context->set_preference( 'OpeningHours', '', 'Define opening hours YAML', 'Textarea', '70|10' );
+            C4::Context->set_preference( 'OpeningHours', "---\n\n", 'Define opening hours YAML', 'Textarea', '70|10' );
         my $EncryptionConfiguration     = defined C4::Context->preference('EncryptionConfiguration') ? 1 :
             C4::Context->set_preference( 'EncryptionConfiguration', '', 'Generic configuration for encryption', 'Textarea' );
         my $SSBlockCleanOlderThanThis   = defined C4::Context->preference('SSBlockCleanOlderThanThis') ? 1 :

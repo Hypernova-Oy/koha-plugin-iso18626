@@ -114,7 +114,7 @@ BorrowerCategories: PT S ST
 BranchBlock: 1
 YAML
 
-        $SSRules = C4::Context->set_preference('SSRules', $SSRules, 'Self-service access rules, age limit + whitelisted borrower categories', 'Text')
+        $SSRules = C4::Context->set_preference('SSRules', $SSRules, 'Self-service access rules, age limit + whitelisted borrower categories', 'Textarea', '70|10')
             unless C4::Context->preference('SSRules');
 
         my $OpeningHours                = defined C4::Context->preference('OpeningHours') ? 1 :

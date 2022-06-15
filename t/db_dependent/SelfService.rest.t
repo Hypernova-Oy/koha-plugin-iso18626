@@ -47,7 +47,7 @@ t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
 
 subtest("Scenario: Simple test REST API calls.", sub {
     $schema->storage->txn_begin;
-    plan tests => 11;
+    plan tests => 12;
 
     my ($patron, $host, $patronPassword) = build_patron({
         permissions => [],
@@ -145,6 +145,18 @@ subtest("Scenario: Simple test REST API calls.", sub {
         $t->post_ok($librarian_host.'/api/v1/contrib/kohasuomi/borrowers/ssstatus' => form => {cardnumber => $patron->userid(), branchcode => 'IPT'})
         ->status_is('200')
         ->json_like('/permission', qr/1/, "Permission granted");
+    });
+
+    subtest("GET /borrowers/ssstatus, library closed", sub {
+        plan tests => 6;
+
+        # GET Request with formdata body. Test::Mojo clobbers formdata to query params no matter what. So we cheat it a bit here.
+        $t->post_ok($librarian_host.'/api/v1/contrib/kohasuomi/borrowers/ssstatus' => form => {cardnumber => $patron->userid(), branchcode => 'UPL'})
+        ->status_is('200')
+        ->json_like('/permission', qr/0/, "Permission denied")
+        ->json_like('/startTime', qr/07:00/, "startTime")
+        ->json_like('/endTime', qr/06:00/, "endTime")
+        ->json_like('/error', qr/Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours/);
     });
 
     subtest("GET /borrowers/ssstatus, bad library", sub {

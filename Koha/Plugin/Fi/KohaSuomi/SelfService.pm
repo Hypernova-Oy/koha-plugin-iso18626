@@ -52,7 +52,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage;
 
-our $VERSION = "1.0.8";
+our $VERSION = "1.0.9";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',

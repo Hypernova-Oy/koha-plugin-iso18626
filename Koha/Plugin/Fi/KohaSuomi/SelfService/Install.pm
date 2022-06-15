@@ -136,10 +136,12 @@ YAML
 sub configure {
     my ($self, $args) = @_;
     my $logger = Koha::Logger->get();
+    $logger->trace('Entering configure()');
     my $cgi = $self->{'cgi'};
 
     eval {
         if ( $cgi && $cgi->param('save') ) {
+            $logger->trace('Saving changes');
             #openinghours handling
             my $openinghours = {};
             my @branches = Koha::Libraries->search();
@@ -158,9 +160,11 @@ sub configure {
             C4::Context->set_preference('SSBlockCleanOlderThanThis', $cgi->param('SSBlockCleanOlderThanThis'));
             C4::Context->set_preference('SSBlockDefaultDuration', $cgi->param('SSBlockDefaultDuration'));
 
+            $logger->trace('Saved changes');
             $self->go_home();
         }
         else {
+            $logger->trace('Showing configurer UI');
             #prepare the openinghours editor
             my @branches = Koha::Libraries->search();
             my $openinghours = C4::Context->preference('OpeningHours');
@@ -210,6 +214,7 @@ sub configure {
                 plugin_version => $Koha::Plugin::Fi::KohaSuomi::SelfService::VERSION,
             );
 
+            $logger->trace('Rendering UI');
             $self->output_html( $template->output() );
         }
     };

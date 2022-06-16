@@ -309,7 +309,7 @@ sub get_self_service_status {
         elsif (blessed($_) && $_->isa('Koha::Exceptions::Library::NotFound')) {
             return $c->render( status => 404, openapi => { error => "$_" } );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours')) {
+        elsif ($_->isa('Koha::Exception::SelfService::OpeningHours')) {
             $payload = {
                 permission => Mojo::JSON->false,
                 error => ref($_),
@@ -318,7 +318,7 @@ sub get_self_service_status {
             };
             return $c->render( status => 200, openapi => $payload );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked')) {
+        elsif ($_->isa('Koha::Exception::SelfService::PermissionRevoked')) {
             $payload = {
                 permission     => Mojo::JSON->false,
                 error          => ref($_),
@@ -326,11 +326,11 @@ sub get_self_service_status {
             $payload->{expirationdate} = $_->{expirationdate} if $_->{expirationdate};
             return $c->render( status => 200, openapi => $payload );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
+        elsif ($_->isa('Koha::Exception::SelfService::FeatureUnavailable')) {
             $logger->error($_);
             return $c->render( status => 501, openapi => { error => "$_" } );
         }
-        elsif ($_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception')) {
+        elsif ($_->isa('Koha::Exception::SelfService')) {
             $payload = {
                 permission => Mojo::JSON->false,
                 error => ref($_),

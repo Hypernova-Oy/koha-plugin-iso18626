@@ -8,7 +8,7 @@ use Koha::Logger;
 use t::db_dependent::opening_hours_context;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
-use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
+use Koha::Exception::SelfService;
 use Koha::Exceptions::Config;
 
 my $now = DateTime->now(
@@ -53,7 +53,7 @@ subtest 'Opening hours exceptions' => sub {
         Koha::Plugin::Fi::KohaSuomi::SelfService::isLibraryOpen('LPL');
         ok(0, "Test: $testName failed. We should get exception instead!");
     } catch {
-        if (blessed($_) && $_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
+        if (blessed($_) && $_->isa('Koha::Exception::SelfService::FeatureUnavailable')) {
             ok(1, $testName);
         } else {
             ok(0, "Test: $testName failed. $_");
@@ -69,7 +69,7 @@ subtest 'Opening hours exceptions' => sub {
         Koha::Plugin::Fi::KohaSuomi::SelfService::isLibraryOpen('IPT', $today);
         ok(0, "Test: $testName failed. We should get exception instead!");
     } catch {
-        if (blessed($_) && $_->isa('Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable')) {
+        if (blessed($_) && $_->isa('Koha::Exception::SelfService::FeatureUnavailable')) {
             ok(1, $testName);
         } else {
             ok(0, "Test: $testName failed. $_");

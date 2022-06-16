@@ -22,7 +22,7 @@ use Koha::Logger;
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Log qw(toString);
 
-use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
 use Koha::Exceptions::Library;
 use Koha::Exceptions::Patron;
@@ -67,7 +67,7 @@ sub new {
 }
 
 sub _getDefaultExpirationdate {
-    my $ddur = C4::Context->preference('SSBlockDefaultDuration') // Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "Syspref 'SSBlockDefaultDuration' is undefined");
+    my $ddur = C4::Context->preference('SSBlockDefaultDuration') // Koha::Exception::SelfService::FeatureUnavailable->throw(error => "Syspref 'SSBlockDefaultDuration' is undefined");
     return DateTime->now(time_zone => C4::Context->tz)->add(days => $ddur);
 }
 

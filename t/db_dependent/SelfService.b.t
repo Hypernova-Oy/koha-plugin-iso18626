@@ -25,7 +25,7 @@ use Koha::Account::Line;
 
 
 use Koha::Libraries;
-use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
+use Koha::Exception::SelfService::FeatureUnavailable;
 
 my $schema  = Koha::Database->new->schema;
 my $builder = t::lib::TestBuilder->new;
@@ -102,7 +102,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
 
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::FeatureUnavailable',
                   "System preferences not properly set");
     });
     subtest("Given a system preference 'SSRules'", sub {
@@ -129,7 +129,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
 
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::TACNotAccepted',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::TACNotAccepted',
                   "Finely behaving user hasn't agreed to terms and conditions of self-service usage");
     });
     subtest("Self-service terms and conditions accepted, but user's self-service permissions have been revoked", sub {
@@ -141,7 +141,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         );
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::PermissionRevoked',
                   "User Self-Service permission revoked");
     });
     subtest("Self-service permission reinstituted, but the user has a wrong borrower category", sub {
@@ -153,7 +153,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         );
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::BlockedBorrowerCategory',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::BlockedBorrowerCategory',
                   "User's borrower category is not whitelisted");
     });
     subtest("Borrower category changed, but the user is still underaged", sub {
@@ -162,13 +162,13 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         $b->{categorycode} = ('PT'); Koha::Patrons->find($b->{borrowernumber})->set($b)->store;
 
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::Underage',
                   "Underage user has no permission");
 
         $b->{dateofbirth} = DateTime->now(time_zone => C4::Context->tz())->subtract(years => 15)->add(days => 1)->iso8601();
         ok(Koha::Patrons->find($b->{borrowernumber})->set($b)->store,
                   "Underage user is one day to 15 years old");
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::_CheckMinimumAge($b, {MinimumAge => 15})}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::Underage',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::_CheckMinimumAge($b, {MinimumAge => 15})}, 'Koha::Exception::SelfService::Underage',
                   "Underage user has no permission");
 
         $b->{dateofbirth} = DateTime->now(time_zone => C4::Context->tz())->subtract(years => 15)->iso8601();
@@ -185,7 +185,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         $b->{dateofbirth} = ('2000-01-01'); Koha::Patrons->find($b->{borrowernumber})->set($b)->store;
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
                   "User has no permission");
         like($@, qr/Card expired/, "And the card is expired");
     });
@@ -195,7 +195,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         $b->{dateexpiry} = ('2075-01-01'); Koha::Patrons->find($b->{borrowernumber})->set($b)->store; #For sure Koha is no longer used in 2075
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
                   "User has no permission");
         like($@, qr/Card lost/, "And the card is lost");
     });
@@ -205,7 +205,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         $b->{lost} = 0; Koha::Patrons->find($b->{borrowernumber})->set($b)->store;
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
                   "User has no permission");
         like($@, qr/Debarred/, "And is debarred");
     });
@@ -215,7 +215,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         Koha::Patron::Debarments::DelDebarment($debarment->{borrower_debarment_id});
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
                   "User has no permission");
         like($@, qr/Too many fines '1000/, "And has too many fines");
     });
@@ -225,7 +225,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         my $account = Koha::Account->new({ patron_id => $b->{borrowernumber} });
         $account->pay( { amount => 1000 } );
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'UPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::OpeningHours',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'UPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::OpeningHours',
                   "Library is closed");
     });
     subtest("Borrower tries another library, but is blocked from that specific library", sub {
@@ -233,7 +233,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
 
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::PermissionRevoked',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService::PermissionRevoked',
                   "User is blocked from this specific library");
         like($@->{expirationdate}, qr/^\d\d\d\d-\d\d-\d\d[T ]\d\d:\d\d:\d\d/,
                   "And the given exception has the block's expirationdate");
@@ -326,7 +326,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
 
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
-        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception',
+        throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
                   "User has no permission");
         like($@, qr/Too many fines '1000/, "And has too many fines");
     });

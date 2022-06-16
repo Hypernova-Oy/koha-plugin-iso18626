@@ -18,7 +18,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Block;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Log qw(toString);
 
 use Koha::Exceptions;
-use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
 use Koha::Logger;
 my $logger = Koha::Logger->get;
@@ -36,13 +36,13 @@ Removes old blocks from the database
  @param1 {Integer} OPTIONAL. Number of days. Remove blocks that have been expired longer than this. Defaults to syspref 'SSBlockCleanOlderThanThis'
  @returns {Integer} The number of rows affected. See DBI::execute
  @throws Koha::Exceptions::Exception
- @throws Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable, if syspref 'SSBlockCleanOlderThanThis' is not set and no days are given as parameter.
+ @throws Koha::Exception::SelfService::FeatureUnavailable, if syspref 'SSBlockCleanOlderThanThis' is not set and no days are given as parameter.
 
 =cut
 
 sub cleanup {
     my $maxAgeDays = $_[0] // C4::Context->preference('SSBlockCleanOlderThanThis');
-    Koha::Plugin::Fi::KohaSuomi::SelfService::Exception::FeatureUnavailable->throw(error => "Trying to clean stale self-service branch-specific blocks, but the syspref 'SSBlockCleanOlderThanThis' is not properly configured.") unless(defined($maxAgeDays));
+    Koha::Exception::SelfService::FeatureUnavailable->throw(error => "Trying to clean stale self-service branch-specific blocks, but the syspref 'SSBlockCleanOlderThanThis' is not properly configured.") unless(defined($maxAgeDays));
     $logger->info("Cleaning blocks older than '$maxAgeDays' days") if $logger->is_info();
 
     my $dbh = C4::Context->dbh();

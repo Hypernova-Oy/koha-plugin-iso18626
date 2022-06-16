@@ -1,5 +1,6 @@
 package Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
+# Copyright 2022 Hypernova Oy
 # Copyright 2016 KohaSuomi
 #
 # This file is part of Koha.
@@ -22,9 +23,36 @@ use Modern::Perl;
 use Koha::Exceptions;
 
 use Exception::Class (
-    'Koha::Plugin::Fi::KohaSuomi::SelfService::Exception' => {
+    'Koha::Exception::SelfService' => {
         isa => 'Koha::Exceptions::Exception',
         description => "A generic Self-Service exception type",
+    },
+    'Koha::Exception::SelfService::BlockedBorrowerCategory' => {
+        isa => 'Koha::Exception::SelfService',
+        description => "The given borrower has an unauthorized borrower category",
+    },
+    'Koha::Exception::SelfService::FeatureUnavailable' => {
+        isa => 'Koha::Exception::SelfService',
+        description => 'Feature requested is not currently available',
+    },
+    'Koha::Exception::SelfService::OpeningHours' => {
+        isa => 'Koha::Exception::SelfService',
+        description => "Self-service resource closed at this time. Possibly outside opening hours or otherwise library has set this resource unavailable at this specific time. Try again alter. Attached time fields in ISO8601.",
+        fields => ['startTime', 'endTime'],
+    },
+    'Koha::Exception::SelfService::PermissionRevoked' => {
+        isa => 'Koha::Exception::SelfService',
+        description => "The given borrower has got his self-service usage permission revoked",
+        fields => ['expirationdate'],
+    },
+    'Koha::Exception::SelfService::TACNotAccepted' => {
+        isa => 'Koha::Exception::SelfService',
+        description => "Self-Service terms and conditions has not been accepted by the user in the OPAC",
+    },
+    'Koha::Exception::SelfService::Underage' => {
+        isa => 'Koha::Exception::SelfService',
+        description => "The given borrower is too young to access the self-service resource",
+        fields => ['minimumAge'],
     },
 );
 

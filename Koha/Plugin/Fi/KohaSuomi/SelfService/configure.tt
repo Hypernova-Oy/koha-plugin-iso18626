@@ -16,7 +16,7 @@
                 <!-- We can access our own plugins resource files using the PLUGIN_PATH variable. -->
                 <h3>Self Service API: Configuration - v[% plugin_version %]</h3>
                 <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
-                <form method="get">
+                <form method="post">
                     <input type="submit" value="Save configuration" />
                     <!-- Always pass these two parameters so the plugin system knows what to execute! -->
                     <input type="hidden" name="class" value="[% CLASS %]"/>

@@ -46,7 +46,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
-our $VERSION = "1.0.10";
+our $VERSION = "1.0.11";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',

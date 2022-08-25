@@ -20,11 +20,11 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
 use Modern::Perl;
 
-use Koha::Exceptions;
+use Koha::Exception;
 
 use Exception::Class (
     'Koha::Exception::SelfService' => {
-        isa => 'Koha::Exceptions::Exception',
+        isa => 'Koha::Exception',
         description => "A generic Self-Service exception type",
     },
     'Koha::Exception::SelfService::BlockedBorrowerCategory' => {

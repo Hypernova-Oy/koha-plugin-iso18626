@@ -1,0 +1,408 @@
+---
+
+swagger: "2.0"
+info:
+  title: API Title
+  version: "1.0"
+paths:
+  "/borrowers/{borrowernumber}/ssblocks":
+    delete:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_delete
+      operationId: borrower_ss_blocks_delete
+      tags:
+        - patrons
+        - self_service
+      summary: Deletes the Borrower's branch-specific self-service blocks for all
+        branches
+      description: ""
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+      x-koha-authorization:
+        permissions:
+          borrowers: ss_blocks_delete
+      responses:
+        "200":
+          description: Deleted ok
+          schema:
+            type: object
+            required:
+              - deleted_count
+            properties:
+              deleted_count:
+                description: How many Block-objects have been deleted in the DB
+                type: integer
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No self-service blocks for the given Patron
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_list
+      operationId: borrower_ss_blocks_list
+      tags:
+        - patrons
+        - self_service
+      summary: Returns the Borrower's branch-specific self-service blocks
+      description: Can access logged in user's own data, or his guarantees/guarantors.
+        By default, returns the currently active blocks.
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+      x-koha-authorization:
+        allow-owner: true
+        allow-guarantor: true
+        permissions:
+          borrowers: ss_blocks_list
+      responses:
+        "200":
+          description: List of self-service blocks
+          schema:
+            type: array
+            items:
+              $ref: openapi/definitions.yaml#/borrowerSelfServiceBlock
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No self-service blocks for the given Patron
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+    post:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_blocks_post
+      operationId: borrower_ss_blocks_post
+      tags:
+        - patrons
+        - self_service
+      summary: Creates a branch-specific self-service block for the given borrower
+      description: ""
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+        - $ref: openapi/parameters.yaml#/borrowerSelfServiceBlockBodyParam
+      x-koha-authorization:
+        permissions:
+          borrowers: ss_blocks_create
+      responses:
+        "200":
+          description: The created self-service block
+          schema:
+            $ref: openapi/definitions.yaml#/borrowerSelfServiceBlock
+        "400":
+          description: Related borrower, creator or branchcode is missing
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No related object found
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  "/borrowers/{borrowernumber}/ssblocks/{borrower_ss_block_id}":
+    delete:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_block_delete
+      operationId: borrower_ss_block_delete
+      tags:
+        - patrons
+        - self_service
+      summary: Deletes the Borrower's branch-specific self-service blocks for all
+        branches
+      description: ""
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+        - $ref: openapi/parameters.yaml#/borrower_ss_block_idPathParam
+      x-koha-authorization:
+        permissions:
+          borrowers: ss_blocks_delete
+      responses:
+        "200":
+          description: Deleted ok
+          schema:
+            type: object
+            required:
+              - deleted_count
+            properties:
+              deleted_count:
+                description: How many Block-objects have been deleted in the DB
+                type: integer
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No related object found
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_block_get
+      operationId: borrower_ss_block_get
+      tags:
+        - patrons
+        - self_service
+      summary: Returns the Borrower's single branch-specific self-service block
+      description: Can access logged in user's own data, or his guarantees/guarantors
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+        - $ref: openapi/parameters.yaml#/borrower_ss_block_idPathParam
+      x-koha-authorization:
+        allow-owner: true
+        allow-guarantor: true
+        permissions:
+          borrowers: ss_blocks_get
+      responses:
+        "200":
+          description: A self-service block
+          schema:
+            $ref: openapi/definitions.yaml#/borrowerSelfServiceBlock
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No such self-service block
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  "/borrowers/{borrowernumber}/ssblocks/hasblock/{branchcode}":
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#ss_block_has
+      operationId: borrower_ss_block_has
+      tags:
+        - patrons
+        - self_service
+      summary: Checks if the given borrower has a block to the given branch
+      description: Can access logged in user's own data, or his guarantees/guarantors
+      produces:
+        - application/json
+      parameters:
+        - $ref: openapi/parameters.yaml#/borrowernumberPathParam
+        - $ref: openapi/parameters.yaml#/branchcodePathParam
+      x-koha-authorization:
+        allow-owner: true
+        allow-guarantor: true
+        permissions:
+          borrowers: ss_blocks_get
+      responses:
+        "200":
+          description: A self-service block
+          schema:
+            $ref: openapi/definitions.yaml#/borrowerSelfServiceBlock
+        "204":
+          description: No such self-service block
+        "401":
+          description: Unauthenticated
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  /borrowers/ssstatus:
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#get_self_service_status
+      x-koha-authorization:
+        permissions:
+          borrowers: get_self_service_status
+      operationId: getSelfServiceStatus
+      tags:
+        - patrons
+        - self_service
+      summary: Check if a borrower is allowed to access self-service resources
+      description: This endpoint is intended to be used by barcode readers to quickly
+        check for self-service permissions and availability. The self-service
+        device is expected to authenticate using it's own credentials and itäs
+        own default library location. <p>See the description of response with
+        status '200 OK' for expected access restrictions.</p>
+      produces:
+        - application/json
+      parameters:
+        - name: cardnumber
+          description: The barcode of the library card the Borrower uses to authenticate
+          in: formData
+          required: true
+          type: string
+        - name: branchcode
+          description: The branchcode of the library to check for permissions
+          in: formData
+          required: false
+          type: string
+      responses:
+        "200":
+          description: Permission granted/denied
+          schema:
+            $ref: openapi/definitions.yaml#/borrowerSelfServiceStatus
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "403":
+          description: No permission
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No such barcode in use
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Unexpected exception happened?!??.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "501":
+          description: Feature not configured properly. Notify the API maintainer.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  /selfservice/openinghours:
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#list_openingHours
+      operationId: listOpeningHours
+      tags:
+        - self_service
+        - openinghours
+      summary: Check the opening hours of our self-service resources
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: openapi/definitions.yaml#/selfServiceAllOpeningHours
+        "500":
+          description: Unexpected exception happened?!??.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "501":
+          description: Feature not configured properly. Notify the API maintainer.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  /selfservice/openinghours/self:
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#get_openingHours
+      operationId: getOpeningHours
+      tags:
+        - self_service
+        - openinghours
+      summary: Check the opening hours of the logged in self-service resources API
+        user. Uses the user accounts homebranch-field to get the opening hours
+        for.
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: openapi/definitions.yaml#/selfServiceOpeningHours
+        "401":
+          description: User is not authenticated.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "404":
+          description: No opening hours defined for the logged in user's branch.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "500":
+          description: Unexpected exception happened?!??.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+        "501":
+          description: Feature not configured properly. Notify the API maintainer.
+          schema:
+            $ref: openapi/definitions.yaml#/error
+  /selfservice/pincheck:
+    get:
+      x-mojo-to: Fi::KohaSuomi::SelfService::StatusApi#get_PINCheck
+      x-koha-authorization:
+        permissions:
+          borrowers: get_self_service_status
+      operationId: getPINCheck
+      tags:
+        - self_service
+        - auth
+      summary: Check the self-service PIN and cardnumber.
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          description: The Username the Borrower uses to authenticate
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              cardnumber:
+                description: User's cardnumber or username
+                type:
+                  - string
+              password:
+                type: string
+                format: password
+                description: The user's password'
+            required:
+              - cardnumber
+              - password
+      consumes:
+        - application/json
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: openapi/definitions.yaml#/borrowerSelfServiceStatus
+        "404":
+          description: No such user cardnumber or username found.
+          schema:
+            $ref: openapi/definitions.yaml#/error

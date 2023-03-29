@@ -20,6 +20,7 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Modern::Perl;
 
+use Class::Inspector;
 use Data::Dumper;
 use YAML::XS;
 
@@ -28,6 +29,7 @@ use Koha::Logger;
 use Koha::DateUtils;
 
 use Koha::Libraries;
+use Koha::Library;
 use Koha::Patron::Attributes;
 use Koha::Patron::Attribute::Types;
 
@@ -125,6 +127,20 @@ YAML
             C4::Context->set_preference( 'SSBlockCleanOlderThanThis', '3650', 'Clean expired self-service branch-specific access blocks older than this many days. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Integer' );
         my $SSBlockDefaultDuration      = defined C4::Context->preference('SSBlockDefaultDuration') ? 1 :
             C4::Context->set_preference( 'SSBlockDefaultDuration', '60', 'Self-service branch-specific access block default duration. You must enable access rule "BranchBlock" in syspref "SSRules" for this to have effect.', 'Free' );
+
+
+        #This is copypaste from Koha::Plugins->InstallPlugins(). It is important to be called here
+        #so we can execute plugin lifecycle tests, because Koha::Plugins::InstallPlugins is hacked to
+        #generate method definitions in DB only in bulk, and they are not generated during single plugin
+        #install.
+        foreach my $method ( @{ Class::Inspector->methods( $self->{class}, 'public' ) } ) {
+            Koha::Plugins::Method->new(
+                {
+                    plugin_class  => $self->{class},
+                    plugin_method => $method,
+                }
+            )->store();
+        }
     };
     if ($@) {
         $logger->fatal("Installing koha-plugin-self-service failed: $@");
@@ -144,7 +160,7 @@ sub configure {
             $logger->trace('Saving changes');
             #openinghours handling
             my $openinghours = {};
-            my @branches = Koha::Libraries->search();
+            my @branches = Koha::Libraries->search()->as_list;
             for my $branch (@branches) {
                 for my $wday (0,1,2,3,4,5,6) {
                     $openinghours->{$branch->branchcode} = [] unless $openinghours->{$branch->branchcode};
@@ -166,7 +182,7 @@ sub configure {
         else {
             $logger->trace('Showing configurer UI');
             #prepare the openinghours editor
-            my @branches = Koha::Libraries->search();
+            my @branches = Koha::Libraries->search()->as_list;
             my $openinghours = C4::Context->preference('OpeningHours');
             my $openinghours_loop = {};
             my $openinghours_loop_error;
@@ -261,6 +277,12 @@ sub uninstall {
 
         my $table = $self->get_qualified_table_name('borrower_ss_blocks');
         C4::Context->dbh->do("DROP TABLE IF EXISTS $table;");
+
+        #This is copypaste from Koha::Plugins::Handler->delete(). It is important to be called here
+        #so we can execute plugin lifecycle tests, because Koha::Plugins::Handler->delete removes all
+        #plugin source code files.
+        C4::Context->dbh->do( "DELETE FROM plugin_data WHERE plugin_class = ?", undef, ($self->{class}) );
+        Koha::Plugins::Methods->search({ plugin_class => $self->{class} })->delete();
     };
     if ($@) {
         $logger->fatal("Uninstalling koha-plugin-self-service failed: $@");

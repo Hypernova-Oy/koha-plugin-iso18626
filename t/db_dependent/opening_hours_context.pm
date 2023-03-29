@@ -2,6 +2,8 @@ package t::db_dependent::opening_hours_context;
 
 use Modern::Perl;
 
+use YAML;
+
 sub createContext {
   our $now = DateTime->now(
             time_zone => C4::Context->tz,
@@ -189,7 +191,9 @@ sub createContext {
 
 sub createContextWithErrors {
   my $hours = createContext();
-  delete $hours->{IPT}->[6]; #Sunday is missing, we throw an exception
+  my $h = YAML::Load($hours);
+  delete $h->{IPT}->[6]; #Sunday is missing, we throw an exception
+  return YAML::Dump($h);
 }
 
 

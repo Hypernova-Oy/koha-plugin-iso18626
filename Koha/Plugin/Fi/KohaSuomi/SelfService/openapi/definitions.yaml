@@ -1,0 +1,12 @@
+---
+
+borrowerSelfServiceStatus:
+  $ref: definitions/borrowerSelfServiceStatus.yaml
+borrowerSelfServiceBlock:
+  $ref: definitions/borrowerSelfServiceBlock.yaml
+selfServiceAllOpeningHours:
+  $ref: definitions/selfServiceAllOpeningHours.yaml
+selfServiceOpeningHours:
+  $ref: definitions/selfServiceOpeningHours.yaml
+error:
+  $ref: definitions/error.yaml

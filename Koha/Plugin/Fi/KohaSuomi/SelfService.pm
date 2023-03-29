@@ -2,7 +2,7 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService;
 
 # Copyright 2016 KohaSuomi
 # Copyright 2018 The National Library of Finland
-# Copyright 2019 Hypernova Oy
+# Copyright 2023 Hypernova Oy
 #
 # This file is part of Koha.
 #
@@ -46,14 +46,14 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
-our $VERSION = "1.0.11";
+our $VERSION = "22.11.0";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',
     author          => 'Lari Taskula',
     date_authored   => '2019-11-05',
-    date_updated    => "2022-05-02",
-    minimum_version => '19.05.00.000',
+    date_updated    => "2023-03-29",
+    minimum_version => '22.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
     description     => 'This plugin implements Self Service Permission API for use with the Toveri access control device'
@@ -88,13 +88,16 @@ sub upgrade {
     return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::upgrade(@_);
 }
 
-sub api_routes {
+sub cronjob_nightly {
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::BackgroundTasks::cronjob_nightly(@_);
+}
+
+sub api_spec {
     my ( $self, $args ) = @_;
 
-    my $spec_dir = $self->mbf_dir();
-    my $spec = JSON::Validator->new->schema($spec_dir . "/openapi.json")->schema->{data};
-
-    return $spec;
+    my $schema2 = JSON::Validator::Schema::OpenAPIv2->new;
+    $schema2->resolve($self->mbf_dir() . "/openapi.json");
+    return $schema2->bundle->data; #Bundle merges the external/internal/local references in the plugin schema path.
 }
 
 sub api_namespace {

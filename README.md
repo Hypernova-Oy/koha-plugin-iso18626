@@ -3,7 +3,7 @@ Self-service permission API for Koha ILS
 
 # Downloading
 
-From the [release page](https://github.com/bywatersolutions/koha-plugin-kitchen-sink/releases) you can download the relevant *.kpz file
+From the [release page](https://github.com/Hypernova-Oy/koha-plugin-self-service/releases) you can download the relevant *.kpz file
 
 # Installing
 
@@ -18,3 +18,11 @@ To set up the Koha plugin system you must first make some changes to your instal
 * Restart your webserver
 
 Once set up is complete you will need to alter your UseKohaPlugins system preference. On the Tools page you will see the Tools Plugins and on the Reports page you will see the Reports Plugins.
+
+# Updating
+
+After updating the plugin, you must restart plack to update the new REST endpoints.
+
+# Testing
+
+    KOHA_CONF=/etc/koha/sites/demo_1/koha-conf.xml PERL5LIB="$PERL5LIB:/usr/share/koha/lib/:." perl t/db_dependent/opening_hours.t

@@ -35,3 +35,6 @@ inc/
 /*.zip
 
 /node_modules
+
+t/lib/TestBuilder.pm
+t/lib/Mocks.pm

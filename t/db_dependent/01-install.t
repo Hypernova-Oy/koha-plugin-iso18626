@@ -35,6 +35,7 @@ use t::db_dependent::Util qw(build_patron);
 use Koha::Plugin::Fi::KohaSuomi::SelfService;
 
 use Koha::Database;
+use Koha::Plugins::Handler;
 
 my $schema = Koha::Database->schema;
 my $builder = t::lib::TestBuilder->new;
@@ -45,24 +46,33 @@ subtest("Scenario: Simple plugin lifecycle tests.", sub {
     $schema->storage->txn_begin;
     plan tests => 5;
 
-    my $plugin = Koha::Plugin::Fi::KohaSuomi::SelfService->new();
+    my $plugin; #Instantiating a Plugin-instance autoinstalls/upgrades it to Koha
 
     subtest("Make sure the plugin is uninstalled", sub {
         plan tests => 1;
 
-        ok($plugin->uninstall(), "Uninstalled");
+        #We cannot use
+        #  Koha::Plugins::Handler->delete({class => 'Koha::Plugin::Fi::KohaSuomi::SelfService'}); #This actually installs and deletes the plugin.
+        #Because it removes all source code files currently being developed
+
+        $plugin = Koha::Plugin::Fi::KohaSuomi::SelfService->new(); #This implicitly calls install()
+        $plugin->uninstall(); #So we have to install/upgrade + uninstall the plugin.
+        ok(!$plugin->retrieve_data('__INSTALLED__'), "Uninstalled");
     });
 
     subtest("Install the plugin", sub {
         plan tests => 1;
 
-        ok($plugin->install(), "Installed");
+        $plugin = Koha::Plugin::Fi::KohaSuomi::SelfService->new(); #This implicitly calls install()
+        ok($plugin->retrieve_data('__INSTALLED__'), "Installed");
     });
 
     subtest("Upgrade the plugin", sub {
         plan tests => 1;
 
-        ok($plugin->upgrade(), "Upgraded");
+        $plugin->store_data({ '__INSTALLED_VERSION__' => '0.0.0' });
+        $plugin = Koha::Plugin::Fi::KohaSuomi::SelfService->new(); #This implicitly calls upgrade()
+        is($plugin->get_metadata->{version}, $plugin->retrieve_data('__INSTALLED_VERSION__'), "Upgraded");
     });
 
     subtest("Configure the plugin", sub {
@@ -107,7 +117,7 @@ sub cookie {
     return {};
 }
 sub redirect {
-    return {};
+    return "";
 }
 
 1;

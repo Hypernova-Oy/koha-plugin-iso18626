@@ -90,7 +90,7 @@ subtest 'Opening hours exceptions' => sub {
         Koha::Plugin::Fi::KohaSuomi::SelfService::isLibraryOpen('CPL');
         ok(0, "Test: $testName failed. We should get exception instead!");
     } catch {
-        if (blessed($_) && $_->isa('Koha::Exceptions::Config')) {
+        if (blessed($_) && $_->isa('Koha::Exception::SelfService::FeatureUnavailable')) {
             ok(1, $testName);
         } else {
             ok(0, "Test: $testName failed. $_");
@@ -106,7 +106,7 @@ subtest 'Opening hours exceptions' => sub {
         Koha::Plugin::Fi::KohaSuomi::SelfService::isLibraryOpen('IPT');
         ok(0, "Test: $testName failed. We should get exception instead!");
     } catch {
-        if (blessed($_) && $_->isa('Koha::Exceptions::Config')) {
+        if (blessed($_) && $_->isa('Koha::Exception::SelfService::FeatureUnavailable')) {
             ok(1, $testName);
         } else {
             ok(0, "Test: $testName failed. $_");

@@ -37,16 +37,20 @@ use Mojo::Cookie::Request;
 
 use Koha::Database;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService;
+
 my $schema = Koha::Database->schema;
 my $builder = t::lib::TestBuilder->new;
 $t::db_dependent::Util::builder = $builder;
 
+$schema->storage->txn_begin;
+my $plugin =  Koha::Plugin::Fi::KohaSuomi::SelfService->new(); #Make sure the plugin is installed
+
 my $t = Test::Mojo->new('Koha::REST::V1');
 t::lib::Mocks::mock_preference( 'RESTBasicAuth', 1 );
 
-
 subtest("Scenario: Simple test REST API calls.", sub {
-    $schema->storage->txn_begin;
+
     plan tests => 12;
 
     my ($patron, $host, $patronPassword) = build_patron({
@@ -220,9 +224,9 @@ subtest("Scenario: Simple test REST API calls.", sub {
         ->json_like('/6/0', qr/^12:00$/, 'IPT->Sunday->Start')
         ->json_like('/6/1', qr/^16:00$/, 'IPT->Sunday->End');
     });
-
-    $schema->storage->txn_rollback;
 });
+
+$schema->storage->txn_rollback;
 
 sub prepareBasicAuthHeader {
     my ($username, $password) = @_;

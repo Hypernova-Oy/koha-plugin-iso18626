@@ -85,7 +85,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         );
 
         Koha::Patron::Debarments::AddDebarment({borrowernumber => $b->{borrowernumber}});
-        ok($debarment = Koha::Patron::Debarments::GetDebarments({borrowernumber => $b->{borrowernumber}})->[0],
+        ok($debarment = $p->restrictions->search()->single,
            "Debarment given");
 
         ok($f = Koha::Account::Line->new({ borrowernumber => $b->{borrowernumber}, amountoutstanding => 1000, note => 'fid', interface => 'intranet' })->store(),
@@ -212,7 +212,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
     subtest("Borrower debarment lifted, but still has too many fines", sub {
         plan tests => 2;
 
-        Koha::Patron::Debarments::DelDebarment($debarment->{borrower_debarment_id});
+        Koha::Patron::Debarments::DelDebarment($debarment->borrower_debarment_id);
         $b = Koha::Patrons->find($user->{borrowernumber})->unblessed;
 
         throws_ok(sub {Koha::Plugin::Fi::KohaSuomi::SelfService::CheckSelfServicePermission($b, 'CPL', 'accessMainDoor')}, 'Koha::Exception::SelfService',
@@ -305,7 +305,7 @@ subtest("Scenario: User with all possible blocks and bans tries to access a Self
         );
 
         Koha::Patron::Debarments::AddDebarment({borrowernumber => $b->{borrowernumber}});
-        ok($debarment = Koha::Patron::Debarments::GetDebarments({borrowernumber => $b->{borrowernumber}})->[0],
+        ok($debarment = $p->restrictions->search()->single,
            "Debarment given");
 
         ok($f = Koha::Account::Line->new({ borrowernumber => $b->{borrowernumber}, amountoutstanding => 1000, note => 'fid', interface => 'intranet' })->store(),

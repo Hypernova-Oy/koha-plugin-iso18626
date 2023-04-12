@@ -42,6 +42,7 @@ use Koha::DateUtils;
 use Koha::Logger;
 use Koha::Patron::Debarments;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService::BackgroundTasks;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;

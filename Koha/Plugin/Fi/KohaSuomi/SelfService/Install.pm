@@ -33,6 +33,7 @@ use Koha::Library;
 use Koha::Patron::Attributes;
 use Koha::Patron::Attribute::Types;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::OpeningHours;
 
 sub install {
@@ -223,6 +224,7 @@ sub configure {
                 SSBlockDefaultDuration => C4::Context->preference( 'SSBlockDefaultDuration' ),
                 bor_attr_sstac_status => $sstac_status,
                 bor_attr_ssban_status => $ssban_status,
+                pref_RESTBasicAuth_status => C4::Context->preference('RESTBasicAuth'),
 
                 openinghours_loop => $openinghours_loop,
                 openinghours_loop_error => $openinghours_loop_error,

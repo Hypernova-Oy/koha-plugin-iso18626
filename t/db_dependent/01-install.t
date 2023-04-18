@@ -86,8 +86,7 @@ subtest("Scenario: Simple plugin lifecycle tests.", sub {
         $plugin->{cgi}->{openinghours_IPT_2_end} = "22:22";
         $plugin->{cgi}->{openinghours_IPT_3_start} = "13:13";
         $plugin->{cgi}->{openinghours_IPT_3_end} = "23:23";
-
-        ok($plugin->configure(), "Configure loaded");
+        ok($plugin->configure(), "Saving configurations");
 
         like(C4::Context->preference("OpeningHours"), qr/IPT/, "IPT Library present");
     });
@@ -95,15 +94,22 @@ subtest("Scenario: Simple plugin lifecycle tests.", sub {
     subtest("Load plugin configurer", sub {
         plan tests => 1;
 
+        t::db_dependent::Util::MockPluginsdir();
+
         $plugin->{cgi} = FakeCGI->new();
-        SKIP: {
-            skip "Mocking CGI is completely out-of-scope of this work. Manually running theses tests still give a bit of confidence regarding data munching for the view.", 1;
-            ok($plugin->configure(), "Configure loaded");
-        }
+        $plugin->{cgi}->{save} = 0;
+        ok($plugin->configure(), "Loading the configure-view");
     });
 
     $schema->storage->txn_rollback;
 });
+
+package Koha::Plugin::Fi::KohaSuomi::SelfService;
+
+#Silence the HTML generation from the test case
+sub output_html {
+    return "";
+}
 
 package FakeCGI;
 
@@ -117,6 +123,9 @@ sub cookie {
     return {};
 }
 sub redirect {
+    return "";
+}
+sub header {
     return "";
 }
 

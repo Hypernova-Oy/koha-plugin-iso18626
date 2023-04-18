@@ -44,6 +44,7 @@ use Koha::Patron::Debarments;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::BackgroundTasks;
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Install;
+use Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
@@ -93,22 +94,32 @@ sub cronjob_nightly {
     return Koha::Plugin::Fi::KohaSuomi::SelfService::BackgroundTasks::cronjob_nightly(@_);
 }
 
-sub api_spec {
-    my ( $self, $args ) = @_;
+sub api_routes {
+    Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI::api_routes(@_);
+}
 
-    my $schema2 = JSON::Validator::Schema::OpenAPIv2->new;
-    $schema2->resolve($self->mbf_dir() . "/openapi.json");
-    return $schema2->bundle->data; #Bundle merges the external/internal/local references in the plugin schema path.
+sub api_spec {
+    Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI::api_spec(@_);
 }
 
 sub api_namespace {
-    my ( $self ) = @_;
-
-    return 'kohasuomi';
+    Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI::api_namespace(@_);
 }
 
 sub configure {
     return Koha::Plugin::Fi::KohaSuomi::SelfService::Install::configure(@_);
+}
+
+sub intranet_js {
+    return <<JS;
+    // Koha::Plugin::Fi::KohaSuomi::SelfService::intranet_js() permission description injections
+    document.querySelector("body#pat_member-flags label[for=borrowers_get_self_service_status]").textContent = "Get Self-Service Status";
+    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_create]").textContent = "Create a Self-Service Block";
+    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_delete]").textContent = "Delete a Self-Service Block";
+    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_edit]").textContent = "Edit a Self-Service Block";
+    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_get]").textContent = "Get a Self-Service Block";
+    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_list]").textContent = "List all Self-Service Blocks";
+JS
 }
 
 =head2 CheckSelfServicePermission

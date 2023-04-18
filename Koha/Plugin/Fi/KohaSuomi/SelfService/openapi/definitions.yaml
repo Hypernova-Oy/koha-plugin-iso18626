@@ -9,4 +9,4 @@ selfServiceAllOpeningHours:
 selfServiceOpeningHours:
   $ref: definitions/selfServiceOpeningHours.yaml
 error:
-  $ref: definitions/error.yaml
+  $ref: definitions/selfServiceError.yaml # error is already reserved from the core Koha spec

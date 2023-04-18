@@ -2,8 +2,8 @@
 
 swagger: "2.0"
 info:
-  title: API Title
-  version: "1.0"
+  title: Koha::Plugin::Fi::KohaSuomi::SelfService OpenAPI spec
+  version: "22.11.0"
 paths:
   "/borrowers/{borrowernumber}/ssblocks":
     delete:

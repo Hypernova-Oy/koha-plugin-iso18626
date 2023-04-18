@@ -25,11 +25,17 @@
                 <table class="preferences">
 
                     <tr><td>
-                        <h4><a href="/cgi-bin/koha/admin/patron-attr-types.pl">Borrower extended attributes</a></h4>
+                        <h4>Required <a href="/cgi-bin/koha/admin/patron-attr-types.pl">Borrower extended attributes</a></h4>
                         <p>
                             <ul>
-                                <li>SST&C - Self-Service Terms and Conditions accepted. Has the library user accepted the terms and conditions? Status: [% bor_attr_sstac_status %]</li>
-                                <li>SSBAN - Self-Service usage banned. The user is prevented from accessing self-service resources. Status: [% bor_attr_ssban_status %]</li>
+                                <li>SST&C - Self-Service Terms and Conditions accepted. Has the library user accepted the terms and conditions? Enabled: [% IF bor_attr_sstac_status %]<i class="fa fa-check-circle" aria-hidden="true"></i>[% ELSE %]<i class="fa fa-exclamation-triangle error" aria-hidden="true"></i>[% END %]</li>
+                                <li>SSBAN - Self-Service usage banned. The user is prevented from accessing self-service resources. Enabled: [% IF bor_attr_ssban_status %]<i class="fa fa-check-circle" aria-hidden="true"></i>[% ELSE %]<i class="fa fa-exclamation-triangle error" aria-hidden="true"></i>[% END %]</li>
+                            </ul>
+                        </p>
+                        <h4>Required <a href="/cgi-bin/koha/admin/preferences.pl">System Preferences</a></h4>
+                        <p>
+                            <ul>
+                                <li><a href="/cgi-bin/koha/admin/preferences.pl?tab=&op=search&searchfield=RESTBasicAuth">RESTBasicAuth</a> enabled: [% IF pref_RESTBasicAuth_status %]<i class="fa fa-check-circle" aria-hidden="true"></i>[% ELSE %]<i class="fa fa-exclamation-triangle error" aria-hidden="true"></i>[% END %]</li>
                             </ul>
                         </p>
                     </td></tr>

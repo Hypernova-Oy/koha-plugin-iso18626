@@ -50,5 +50,9 @@ sub build_patron {
     return ($patron, "//$userid:$password@", $password);
 }
 
+#Mock the directory Koha looks for plugins to be this Plugin's dev source code dir
+sub MockPluginsdir {
+    $C4::Context::context->{config}->{config}->{pluginsdir} = Cwd::abs_path(File::Spec->catfile(__FILE__,'..','..','..'));
+}
 
 1;

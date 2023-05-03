@@ -20,6 +20,7 @@ BEGIN {
     #$ENV{MOJO_OPENAPI_DEBUG} = 1;
     #$ENV{MOJO_LOG_LEVEL} = 'debug';
     $ENV{VERBOSE} = 1;
+    $ENV{KOHA_PLUGIN_DEV_MODE} = 1;
 }
 
 use Modern::Perl;

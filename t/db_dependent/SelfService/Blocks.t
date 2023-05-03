@@ -2,6 +2,7 @@
 
 BEGIN {
     $ENV{LOG4PERL_VERBOSITY_CHANGE} = 6;
+    $ENV{KOHA_PLUGIN_DEV_MODE} = 1;
 }
 
 use Modern::Perl '2015';

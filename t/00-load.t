@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Koha; if not, see <http://www.gnu.org/licenses>.
 
+BEGIN {
+    $ENV{KOHA_PLUGIN_DEV_MODE} = 1;
+}
+
 use Modern::Perl;
 
 use Test::More;

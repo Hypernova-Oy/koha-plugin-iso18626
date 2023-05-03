@@ -19,6 +19,8 @@ package Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI;
 
 use Modern::Perl;
 
+use Koha::Plugin::Fi::KohaSuomi::SelfService::URLLib;
+
 use JSON::Validator::Schema::OpenAPIv2;
 
 # Pending: https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=33503
@@ -46,40 +48,10 @@ sub api_routes {
     my $schema = JSON::Validator::Schema::OpenAPIv2->new;
     my $spec = $schema->resolve($spec_dir . '/openapi.yaml');
 
-    return _convert_refs_to_absolute($spec->data->{'paths'}, 'file://' . $spec_dir . '/');
-}
-
-#from https://github.com/NatLibFi/koha-plugin-rest-di/blob/main/Koha/Plugin/Fi/KohaSuomi/DI.pm
-sub _convert_refs_to_absolute {
-    my ( $hashref, $path_prefix ) = @_;
-
-    foreach my $key (keys %{ $hashref }) {
-        if ($key eq '$ref') {
-            if ($hashref->{$key} =~ /^(\.\/)?openapi/) {
-                $hashref->{$key} = $path_prefix . $hashref->{$key};
-            }
-        } elsif (ref $hashref->{$key} eq 'HASH' ) {
-            $hashref->{$key} = _convert_refs_to_absolute($hashref->{$key}, $path_prefix);
-        } elsif (ref($hashref->{$key}) eq 'ARRAY') {
-            $hashref->{$key} = _convert_array_refs_to_absolute($hashref->{$key}, $path_prefix);
-        }
-    }
-    return $hashref;
-}
-#https://github.com/NatLibFi/koha-plugin-rest-di/blob/main/Koha/Plugin/Fi/KohaSuomi/DI.pm
-sub _convert_array_refs_to_absolute {
-    my ( $arrayref, $path_prefix ) = @_;
-
-    my @res;
-    foreach my $item (@{ $arrayref }) {
-        if (ref($item) eq 'HASH') {
-            $item = _convert_refs_to_absolute($item, $path_prefix);
-        } elsif (ref($item) eq 'ARRAY') {
-            $item = _convert_array_refs_to_absolute($item, $path_prefix);
-        }
-        push @res, $item;
-    }
-    return \@res;
+    # The installer automatically changes the references to absolute (bug33503), but not during development.
+    # To have this work more easily during development, we still check for dynamic $refs
+    # Remove this comment when the Bug 33505 compatibility is no longer needed.
+    return Koha::Plugin::Fi::KohaSuomi::SelfService::URLLib::convert_refs_to_absolute($spec->data->{'paths'}, 'file://' . $spec_dir . '/');
 }
 
 1;

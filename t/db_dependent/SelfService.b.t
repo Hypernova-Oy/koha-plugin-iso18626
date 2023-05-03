@@ -1,4 +1,7 @@
 #!perl
+BEGIN {
+    $ENV{KOHA_PLUGIN_DEV_MODE} = 1;
+}
 
 use Modern::Perl '2014';
 use Test::More tests => 2;

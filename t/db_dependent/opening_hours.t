@@ -1,3 +1,7 @@
+BEGIN {
+    $ENV{KOHA_PLUGIN_DEV_MODE} = 1;
+}
+
 use Modern::Perl;
 use Test::More tests => 3;
 use DateTime;

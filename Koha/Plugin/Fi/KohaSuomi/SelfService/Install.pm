@@ -22,6 +22,9 @@ use Modern::Perl;
 
 use Class::Inspector;
 use Data::Dumper;
+use File::Basename;
+use File::Find;
+use File::Slurp;
 use YAML::XS;
 
 use C4::Context;
@@ -142,6 +145,8 @@ YAML
                 }
             )->store();
         }
+
+        bug33503hotfix($self) unless $ENV{KOHA_PLUGIN_DEV_MODE};
     };
     if ($@) {
         $logger->fatal("Installing koha-plugin-self-service failed: $@");
@@ -249,6 +254,8 @@ sub upgrade {
     my $dt = Koha::DateUtils::dt_from_string();
     $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
 
+    bug33503hotfix($self) unless $ENV{KOHA_PLUGIN_DEV_MODE};
+
     return 1;
 }
 
@@ -291,6 +298,29 @@ sub uninstall {
         die $@;
     }
     return 1;
+}
+
+sub bug33503hotfix {
+    my ($plugin) = @_;
+    my $absolute_base_dir_path = $plugin->mbf_dir();
+
+    bug33503_rewrite_openapi_file_refs($absolute_base_dir_path.'/openapi.json') if -e $absolute_base_dir_path.'/openapi.json';
+    bug33503_rewrite_openapi_file_refs($absolute_base_dir_path.'/openapi.yaml') if -e $absolute_base_dir_path.'/openapi.yaml';
+    require File::Find;
+    File::Find::find(sub {
+        bug33503_rewrite_openapi_file_refs($File::Find::name) if $File::Find::name =~ m(.json|.yaml);
+    }, $absolute_base_dir_path.'/openapi') if -e $absolute_base_dir_path.'/openapi';
+}
+
+sub bug33503_rewrite_openapi_file_refs {
+    my ($absolute_file_path) = @_;
+    my $absolute_base_dir_path = File::Basename::dirname($absolute_file_path);
+
+    my $contents = File::Slurp::read_file($absolute_file_path) or die $!;
+    my $c = YAML::XS::Load($contents) or die $!;
+    Koha::Plugin::Fi::KohaSuomi::SelfService::URLLib::convert_refs_to_absolute($c, $absolute_base_dir_path.'/');
+    $contents = YAML::XS::Dump($c) or die $!;
+    File::Slurp::write_file($absolute_file_path, $contents) or die $!;
 }
 
 1;

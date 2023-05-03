@@ -112,13 +112,17 @@ sub configure {
 
 sub intranet_js {
     return <<JS;
-    // Koha::Plugin::Fi::KohaSuomi::SelfService::intranet_js() permission description injections
-    document.querySelector("body#pat_member-flags label[for=borrowers_get_self_service_status]").textContent = "Get Self-Service Status";
-    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_create]").textContent = "Create a Self-Service Block";
-    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_delete]").textContent = "Delete a Self-Service Block";
-    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_edit]").textContent = "Edit a Self-Service Block";
-    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_get]").textContent = "Get a Self-Service Block";
-    document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_list]").textContent = "List all Self-Service Blocks";
+    <script type="text/javascript">
+    if (document.querySelector("body#pat_member-flags") !== null) {
+        // Koha::Plugin::Fi::KohaSuomi::SelfService::intranet_js() permission description injections
+        document.querySelector("body#pat_member-flags label[for=borrowers_get_self_service_status]").textContent = "Get Self-Service Status";
+        document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_create]").textContent = "Create a Self-Service Block";
+        document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_delete]").textContent = "Delete a Self-Service Block";
+        document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_edit]").textContent = "Edit a Self-Service Block";
+        document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_get]").textContent = "Get a Self-Service Block";
+        document.querySelector("body#pat_member-flags label[for=borrowers_ss_blocks_list]").textContent = "List all Self-Service Blocks";
+    }
+    </script>
 JS
 }
 

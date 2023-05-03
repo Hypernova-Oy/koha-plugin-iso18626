@@ -48,7 +48,7 @@ use Koha::Plugin::Fi::KohaSuomi::SelfService::OpenAPI;
 
 use Koha::Plugin::Fi::KohaSuomi::SelfService::Exception;
 
-our $VERSION = "22.11.0";
+our $VERSION = "22.11.1";
 
 our $metadata = {
     name            => 'Koha Self Service Permission API',

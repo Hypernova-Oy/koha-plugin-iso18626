@@ -25,17 +25,22 @@ Package up the relevant parts as a .kpz Koha plugin file.
   sudo apt-get install zip
 =cut
 
-use Modern::Perl;
-use lib '.';
+use strict;
+use warnings;
+use File::Slurp;
 
-use Koha::Plugin::Fi::KohaSuomi::SelfService;
-my $version  = $Koha::Plugin::Fi::KohaSuomi::SelfService::VERSION;
+my $mainPackageFile = './Koha/Plugin/Fi/KohaSuomi/SelfService.pm';
+my $f = File::Slurp::read_file($mainPackageFile);
+unless ($f =~ m/^our \$VERSION\s*=\s*"?(.+?)"?;/gsm) {
+  die "Unable to parse 'our \$VERSION = \"????\"' from '$mainPackageFile'";
+}
+my $version  = $1;
 my $filename = "/tmp/koha-plugin-self-service-$version.kpz";
 
-say `zip -r $filename Koha/`;
+print `zip -r $filename Koha/` ."\n";
 
 if ( -f $filename ) {
-    say "$filename created";
+    print "$filename created\n";
 } else {
-    say "Oooops, something went wrong!";
+    print "Oooops, something went wrong!\n";
 }

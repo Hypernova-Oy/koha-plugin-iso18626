@@ -38,3 +38,5 @@ inc/
 
 t/lib/TestBuilder.pm
 t/lib/Mocks.pm
+
+/Base.pm

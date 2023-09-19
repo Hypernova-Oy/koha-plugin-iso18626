@@ -1,0 +1,11 @@
+---
+properties:
+  error:
+    description: possible end-user authorization error, regardless of the HTTP status
+      code. Can be one of Koha::Exception::SelfService, Koha::Exception::SelfService::BlockedBorrowerCategory,
+      Koha::Exception::SelfService::PermissionRevoked, Koha::Exception::SelfService::TACNotAccepted,
+      Koha::Exception::SelfService::Underage, Koha::Exception::SelfService::OpeningHours
+  permission:
+    description: permission to access the resource granted/denied
+    type: boolean
+type: object

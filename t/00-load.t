@@ -32,9 +32,9 @@ use English qw( -no_match_vars );
 
 =cut
 
-use_ok('Koha::Plugin::Fi::KohaSuomi::SelfService');
+use_ok('Koha::Plugin::ISO18626');
 
-# Loop through the Koha::Plugin::Fi::KohaSuomi::SelfService modules
+# Loop through the Koha::Plugin::ISO18626 modules
 my $package_path = 'Koha/Plugin/Fi/KohaSuomi/SelfService';
 my $lib = File::Spec->rel2abs('Koha/Plugin/Fi/KohaSuomi/SelfService');
 find({

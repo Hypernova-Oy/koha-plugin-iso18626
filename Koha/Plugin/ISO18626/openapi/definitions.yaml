@@ -1,0 +1,11 @@
+---
+borrowerSelfServiceBlock:
+  $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/definitions/borrowerSelfServiceBlock.yaml
+borrowerSelfServiceStatus:
+  $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/definitions/borrowerSelfServiceStatus.yaml
+error:
+  $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/definitions/selfServiceError.yaml
+selfServiceAllOpeningHours:
+  $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/definitions/selfServiceAllOpeningHours.yaml
+selfServiceOpeningHours:
+  $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/definitions/selfServiceOpeningHours.yaml

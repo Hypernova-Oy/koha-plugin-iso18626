@@ -1,0 +1,8 @@
+---
+items:
+  items:
+    description: 'First index: Opening hour of the library. Second index: Closing
+      hour of the library. In time format HH:MM'
+    type: string
+  type: array
+type: array

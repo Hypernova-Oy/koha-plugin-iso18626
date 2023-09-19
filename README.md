@@ -1,9 +1,9 @@
-# koha-plugin-self-service
-Self-service permission API for Koha ILS
+# koha-plugin-iso18626
+ISO 18626:2021 implemented to Koha ILS
 
 # Downloading
 
-From the [release page](https://github.com/Hypernova-Oy/koha-plugin-self-service/releases) you can download the relevant *.kpz file
+From the [release page](https://github.com/Hypernova-Oy/koha-plugin-iso18626/releases) you can download the relevant *.kpz file
 
 # Installing
 
@@ -25,4 +25,4 @@ After updating the plugin, you must restart plack to update the new REST endpoin
 
 # Testing
 
-    KOHA_CONF=/etc/koha/sites/demo_1/koha-conf.xml PERL5LIB="$PERL5LIB:/usr/share/koha/lib/:." perl t/db_dependent/opening_hours.t
+    KOHA_CONF=/etc/koha/sites/demo_1/koha-conf.xml PERL5LIB="$PERL5LIB:/usr/share/koha/lib/:." perl t/*

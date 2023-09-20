@@ -1,4 +1,4 @@
-package Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId;
+package Koha::Plugin::ISO18626::DAO::CT::AgencyId;
 
 use Modern::Perl;
 

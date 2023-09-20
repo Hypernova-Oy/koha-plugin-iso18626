@@ -31,49 +31,31 @@ use Test::More tests => 1;
 use Test::Deep;
 use Test::Mojo;
 
-use Mojo::Cookie::Request;
-
-use Koha::Database;
-
 use Koha::Plugin::ISO18626;
+use t::db_dependent::Util qw(tc build_patron daoAsXML responseAsDAO);
 
-my $schema = Koha::Database->schema;
-
-$schema->storage->txn_begin;
 my $plugin =  Koha::Plugin::ISO18626->new(); #Make sure the plugin is installed
 
 my $t = Test::Mojo->new('Koha::REST::V1');
 
-subtest("Scenario: Simple test REST API calls.", sub {
+subtest("Scenario: Simple test REST API calls.", tc(sub {
 
     plan tests => 1;
 
-    subtest "GET /selfservice/pincheck" => sub {
+    subtest "GET /selfservice/pincheck" => tc(sub {
         plan tests => 2;
 
-        my $xml = <<XML;
-<?xml version="1.0" encoding="UTF-8"?>
-<ISO18626Message>
-  <request>
-    <header>
-      <supplyingAgencyId>
-        <agencyIdType schema="http://illtransactions.org/ISO18626/OpenCodeList/AgencyIdTypeList-V2.0">ISIL</agencyIdType>
-        <agencyIdValue>Fi-NL</agencyIdValue>
-      </supplyingAgencyId>
-    </header>
-    <bibliographicInfo>
-      <supplierUniqueRecordId>1337</supplierUniqueRecordId>
-    </bibliographicInfo>
-  </request>
-</ISO18626Message>
-XML
+        $t->app->routes->websocket('/echo' => sub {
+            my $c = shift;
+            $c->send("echo: hello");
+        });
 
-        $t->post_ok('/api/v1/contrib/iso18626' => {Accept => 'application/xml'} => $xml)
-        ->status_is('200');
-        print $t->tx->res->body;
-    };
-});
-
-$schema->storage->txn_rollback;
+        $t->websocket_ok('/echo')
+        ->send_ok('hello')
+        ->message_ok
+        ->message_is('echo: hello')
+        ->finish_ok;
+    });
+}));
 
 1;

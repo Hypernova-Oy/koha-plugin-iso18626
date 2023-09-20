@@ -25,19 +25,19 @@ use Scalar::Util qw( blessed );
 use Try::Tiny;
 
 use Koha::Plugin::ISO18626::Log;
-use Koha::Plugin::ISO18626::XMLSerializer;
+use Koha::Plugin::ISO18626::XML;
 
 sub iso18626 {
     my $logger = Koha::Logger->get();
     my ($c) = @_;
 
     try {
-        Koha::Plugin::ISO18626::XMLSerializer::
+        Koha::Plugin::ISO18626::XML::deserializeMessage($c->tx->req->body);
 
         return $c->render(status => 200, format => 'xml', text => '<ehlo/>');
 
     } catch {
-        $logger->warn(toString($_)) if $logger->is_warn();
+        $logger->warn(Koha::Plugin::ISO18626::Log::toString($_)) if $logger->is_warn();
         if ( $_->isa('DBIx::Class::Exception') ) {
             return $c->render(
                 status  => 500,

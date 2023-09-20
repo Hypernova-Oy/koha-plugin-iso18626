@@ -3,10 +3,10 @@ package Koha::Plugin::ISO18626::DAO::RequestConfirmation::Header;
 use Modern::Perl;
 
 use Koha::Plugin::ISO18626::DAO::Util (
-    ['supplyingAgencyId', 'Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId'],
+    ['supplyingAgencyId', 'Koha::Plugin::ISO18626::DAO::CT::AgencyId'],
 );
 
-use Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId;
+use Koha::Plugin::ISO18626::DAO::CT::AgencyId;
 
 use base qw(Koha::Plugin::ISO18626::DAO::ST::MessageStatus);
 

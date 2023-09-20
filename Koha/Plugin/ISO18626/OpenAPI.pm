@@ -25,7 +25,7 @@ use JSON::Validator::Schema::OpenAPIv2;
 
 # Pending: https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=33503
 sub api_spec {
-    my ( $plugin, $args ) = @_;
+    my ($plugin) = @_;
     return JSON::Validator::Schema::OpenAPIv2->new;
 
     my $schema2 = JSON::Validator::Schema::OpenAPIv2->new;
@@ -34,14 +34,14 @@ sub api_spec {
 }
 
 sub api_namespace {
-    my ( $plugin ) = @_;
+    my ($plugin) = @_;
 
     return 'iso18626';
 }
 
 #from https://github.com/NatLibFi/koha-plugin-rest-di/blob/main/Koha/Plugin/Fi/KohaSuomi/DI.pm
 sub api_routes {
-    my ( $plugin, $args ) = @_;
+    my ($plugin) = @_;
 
     my $spec_dir = $plugin->mbf_dir();
 

@@ -2,6 +2,9 @@ package Koha::Plugin::ISO18626::XML;
 
 use Koha::Plugin::ISO18626::XML::Deserializer;
 
+use Koha::Plugin::ISO18626::DAO::Request;
+use Koha::Plugin::ISO18626::DAO::RequestConfirmation;
+
 our $DEFAULT_SCHEMA_VERSION = '2021-2'; #ISO 18626:2021 (June 2022 update) http://illtransactions.org/schemas/ISO-18626-2021-2.xsd
 
 sub defaultSchemaVersion {
@@ -25,7 +28,7 @@ sub deserializeMessage {
     Koha::Exception::ISO18626::Schema::XML->throw(error => "Unable to determine the ISO18626Message type (request, supplyingAgencyMessage, ...)");
 }
 
-sub generateMessage {
+sub serializeMessage {
     my ($r, $schemaVersion) = @_;
     $schemaVersion = Koha::Plugin::ISO18626::XML::defaultSchemaVersion() unless $schemaVersion;
 

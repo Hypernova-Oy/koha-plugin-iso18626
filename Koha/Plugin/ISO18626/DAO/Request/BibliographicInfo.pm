@@ -2,8 +2,6 @@ package Koha::Plugin::ISO18626::DAO::Request::BibliographicInfo;
 
 use Modern::Perl;
 
-use Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId;
-
 use Koha::Plugin::ISO18626::DAO::Util (
     ['supplierUniqueRecordId'],
 );

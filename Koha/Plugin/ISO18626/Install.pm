@@ -145,7 +145,7 @@ YAML
             )->store();
         }
 
-        bug33503hotfix($self) unless $ENV{KOHA_PLUGIN_DEV_MODE};
+        #bug33503hotfix($self) unless $ENV{KOHA_PLUGIN_DEV_MODE};
     };
     if ($@) {
         $logger->fatal("Installing koha-plugin-self-service failed: $@");

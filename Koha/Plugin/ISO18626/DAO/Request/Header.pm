@@ -4,10 +4,10 @@ use Modern::Perl;
 
 our %METHODS;
 use Koha::Plugin::ISO18626::DAO::Meta (
-    supplyingAgencyId => {class => 'Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId'},
+    supplyingAgencyId => {class => 'Koha::Plugin::ISO18626::DAO::CT::AgencyId'},
 );
 
-use Koha::Plugin::ISO18626::DAO::CT::SupplyingAgencyId;
+use Koha::Plugin::ISO18626::DAO::CT::AgencyId;
 
 sub new {
     my ($class, $params) = @_;

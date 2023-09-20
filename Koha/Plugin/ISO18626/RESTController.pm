@@ -54,6 +54,21 @@ sub iso18626 {
     };
 }
 
+sub open_websocket {
+    my $logger = Koha::Logger->get();
+    my ($c) = @_;
+
+    my $route = $c->app->routes->find('iso18626_ws');
+    unless ($route) {
+        $c->app->routes->websocket('/iso18626_ws' => sub {
+                my $c = shift;
+                $c->send("echo: hello");
+        } => 'iso18626_ws');
+    }
+
+    return $c->render(status => 200, format => 'text', text => ($route ? 'existed' : 'opened'));
+}
+
 1;
 
 

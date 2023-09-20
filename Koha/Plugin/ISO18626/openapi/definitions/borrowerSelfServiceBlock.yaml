@@ -1,41 +1,42 @@
 ---
+
+type: object
 properties:
   borrower_ss_block_id:
     description: primary key
     type:
-    - integer
-    - 'null'
+      - integer
+      - "null"
   borrowernumber:
-    description: The user that is blocked
     type: integer
+    description: The user that is blocked
   branchcode:
-    description: The branch where the block is in effect
     type: string
-  created_by:
-    description: The librarian that created the block. If not provided, uses the logged
-      in user.
+    description: The branch where the block is in effect
+  expirationdate:
     type:
-    - integer
-    - 'null'
+      - string
+      - "null"
+    description: When the personal branch-specific block is automatically lifted. If
+      omitted, defaults to now + the default block duration
+    format: date-time
+  notes:
+    type:
+      - string
+      - "null"
+    description: Non-formal user created notes about the block.
+  created_by:
+    type:
+      - integer
+      - "null"
+    description: The librarian that created the block. If not provided, uses the
+      logged in user.
   created_on:
+    type:
+      - string
+      - "null"
     description: When was this block created. If not provided, uses NOW()
     format: date-time
-    type:
-    - string
-    - 'null'
-  expirationdate:
-    description: When the personal branch-specific block is automatically lifted.
-      If omitted, defaults to now + the default block duration
-    format: date-time
-    type:
-    - string
-    - 'null'
-  notes:
-    description: Non-formal user created notes about the block.
-    type:
-    - string
-    - 'null'
 required:
-- borrowernumber
-- branchcode
-type: object
+  - borrowernumber
+  - branchcode

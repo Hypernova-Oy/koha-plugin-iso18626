@@ -1,26 +1,27 @@
 ---
-borrowerSelfServiceBlockBodyParam:
-  description: borrower_ss_block-table row
-  in: body
-  name: borrower_ss_block
-  required: true
-  schema:
-    $ref: file:///root/Koha/dev-plugins/koha-plugin-iso18626/Koha/Plugin/ISO18626/openapi/./definitions.yaml#/borrowerSelfServiceBlock
+
 borrower_ss_block_idPathParam:
-  description: Internal borrower_ss_block identifier
-  in: path
   name: borrower_ss_block_id
+  in: path
+  description: Internal borrower_ss_block identifier
   required: true
   type: integer
+borrowerSelfServiceBlockBodyParam:
+  name: borrower_ss_block
+  description: borrower_ss_block-table row
+  in: body
+  required: true
+  schema:
+    $ref: ./definitions.yaml#/borrowerSelfServiceBlock
 borrowernumberPathParam:
-  description: Internal patron identifier
-  in: path
   name: borrowernumber
+  in: path
+  description: Internal patron identifier
   required: true
   type: integer
 branchcodePathParam:
-  description: Internal library identifier
-  in: path
   name: branchcode
+  in: path
+  description: Internal library identifier
   required: true
   type: string

@@ -21,6 +21,7 @@ use Modern::Perl;
 
 use Koha::Plugin::ISO18626::URLLib;
 
+use YAML::XS;
 use JSON::Validator::Schema::OpenAPIv2;
 
 # Pending: https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=33503
@@ -52,6 +53,10 @@ sub api_routes {
     # To have this work more easily during development, we still check for dynamic $refs
     # Remove this comment when the Bug 33505 compatibility is no longer needed.
     return Koha::Plugin::ISO18626::URLLib::convert_refs_to_absolute($spec->data->{'paths'}, '' . $spec_dir . '/');
+}
+
+sub static_routes {
+    return YAML::XS::Load($_[0]->mbf_read('staticapi.yaml') or die $!) or die $!;
 }
 
 1;

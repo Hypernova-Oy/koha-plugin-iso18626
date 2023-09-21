@@ -21,8 +21,6 @@ use Modern::Perl;
 
 use base qw(Koha::Plugins::Base);
 
-use Mojo::JSON qw(decode_json);
-
 use Carp;
 use Time::Piece ();
 use Try::Tiny;
@@ -102,6 +100,10 @@ sub api_spec {
 
 sub api_namespace {
     Koha::Plugin::ISO18626::OpenAPI::api_namespace(@_);
+}
+
+sub static_routes {
+    Koha::Plugin::ISO18626::OpenAPI::static_routes(@_);
 }
 
 sub configure {

@@ -1,0 +1,9 @@
+/web/dist/iso18626.js:
+  get:
+    x-mojo-to: Static#get
+    tags:
+      - pluginStatic
+    responses:
+      "200":
+        schema:
+          type: file

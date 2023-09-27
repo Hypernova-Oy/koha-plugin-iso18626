@@ -69,6 +69,32 @@ sub open_websocket {
     return $c->render(status => 200, format => 'text', text => ($route ? 'existed' : 'opened'));
 }
 
+
+
+use Koha::Illrequests;
+
+=head3 list
+
+Controller function that handles listing Koha::Illrequest objects
+
+=cut
+
+sub list {
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+
+        my $reqs = $c->objects->search(Koha::Illrequests->new->filter_by_visible);
+
+        return $c->render(
+            status  => 200,
+            openapi => $reqs,
+        );
+    } catch {
+        $c->unhandled_exception($_);
+    };
+}
+
 1;
 
 

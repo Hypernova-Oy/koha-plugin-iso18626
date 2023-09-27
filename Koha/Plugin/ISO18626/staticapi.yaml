@@ -1,4 +1,4 @@
-/web/dist/iso18626.js:
+/web/dist/iso18626.v0.0.1.js:
   get:
     x-mojo-to: Static#get
     tags:

@@ -38,4 +38,32 @@ sub serializeXML {
     return $e;
 }
 
+sub storeDBIx {
+    require Koha::Schema::Result::Illrequest;
+    require Koha::Database;
+    my ($self) = @_;
+    my $schema = Koha::Database->schema();
+    my $rs = $schema->resultset('Koha::Schema::Result::Illrequest')->create({
+        borrowernumber => 1,
+        biblio_id => 2,
+        deleted_biblio_id => undef,
+        due_date => '2023-05-05',
+        branchcode => 'CPL',
+        status => '...',
+        status_alias => '...', #FK to authorised_values
+        placed => '2023-04-31',
+        replied => '2023-05-01',
+        updated => '2023-05-05T12:33:22',
+        completed => '2023-06-06',
+        medium => 'BK',
+        accessurl => 'http:/example.com/download?book',
+        cost => 50,
+        price_paid => 40,
+        notesopac => 'ehlo',
+        notesstaff => 'helloworld',
+        orderid => 55,
+        backend => 'iso18626',
+    });
+}
+
 1;

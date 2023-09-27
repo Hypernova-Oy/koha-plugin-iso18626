@@ -1,6 +1,10 @@
 # koha-plugin-iso18626
 ISO 18626:2021 implemented to Koha ILS
 
+# submodules
+
+Koha/Plugin/ISO18626/web git@github.com:Hypernova-Oy/koha-plugin-iso18626-web.git
+
 # Downloading
 
 From the [release page](https://github.com/Hypernova-Oy/koha-plugin-iso18626/releases) you can download the relevant *.kpz file

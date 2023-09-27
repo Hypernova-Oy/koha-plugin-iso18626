@@ -1,0 +1,3 @@
+[submodule "Koha/Plugin/ISO18626/web"]
+	path = Koha/Plugin/ISO18626/web
+	url = git@github.com:Hypernova-Oy/koha-plugin-iso18626-web.git
